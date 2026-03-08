@@ -1,0 +1,15 @@
+# Base image for JavaScript execution
+FROM node:18-alpine
+
+# Create a non-root user (node image already has 'node' user, we will just use that)
+# but we add explicit sandbox settings
+
+WORKDIR /usr/src/app
+
+COPY runners/runner.sh /usr/local/bin/runner
+RUN chmod +x /usr/local/bin/runner
+
+# Switch to the non-root user
+USER node
+
+ENTRYPOINT ["/usr/local/bin/runner"]

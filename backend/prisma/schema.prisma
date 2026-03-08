@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------
+// User & Authentication
+// ---------------------------------------------------------
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  submissions   Submission[]
+  discussions   Discussion[]
+  comments      Comment[]
+  drafts        CodeDraft[]
+
+  // Leaderboard statistics cached on the user for fast querying
+  totalSolved   Int       @default(0)
+  totalScore    Int       @default(0)
+
+  @@index([username])
+  @@index([email])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ---------------------------------------------------------
+// Problems & Execution Context
+// ---------------------------------------------------------
+
+model Problem {
+  id             String      @id @default(uuid())
+  title          String      @unique
+  slug           String      @unique
+  description    String      @db.Text
+  difficulty     Difficulty
+  timeLimit      Float       @default(5.0)  // Maximum execution time in seconds
+  memoryLimit    Int         @default(256) // Maximum memory in MB
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  isActive       Boolean     @default(true) // For soft-deletes or draft problems
+
+  testCases      TestCase[]
+  submissions    Submission[]
+  discussions    Discussion[]
+  drafts         CodeDraft[]
+
+  @@index([slug])
+  @@index([difficulty])
+  @@index([isActive])
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model TestCase {
+  id             String    @id @default(uuid())
+  problemId      String
+  problem        Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  input          String    @db.Text
+  expectedOutput String    @db.Text
+  isHidden       Boolean   @default(false) // Whether the user can see this testcase output
+  order          Int       @default(0)
+
+  @@index([problemId])
+}
+
+// ---------------------------------------------------------
+// Submissions & Execution Results
+// ---------------------------------------------------------
+
+model Submission {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId       String
+  problem         Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  language        Language
+  code            String           @db.Text
+  status          SubmissionStatus @default(PENDING)
+  
+  // Execution Metrics
+  runtime         Float?           // Execution time in milliseconds
+  memory          Float?           // Memory used in MB
+  testcasesPassed Int              @default(0)
+  totalTestcases  Int              @default(0)
+  
+  // Storage for error messages (compilation or runtime errors)
+  errorMessage    String?          @db.Text
+
+  createdAt       DateTime         @default(now())
+
+  @@index([userId])
+  @@index([problemId])
+  @@index([status])
+  @@index([userId, problemId]) // Composite index for checking if user solved a problem
+}
+
+enum Language {
+  PYTHON
+  JAVASCRIPT
+  CPP
+  JAVA
+}
+
+enum SubmissionStatus {
+  PENDING
+  PROCESSING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
+  INTERNAL_ERROR
+}
+
+// ---------------------------------------------------------
+// Auto-saving Code (Drafts)
+// ---------------------------------------------------------
+
+model CodeDraft {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId   String
+  problem     Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  language    Language
+  code        String   @db.Text
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, problemId, language]) // Only one draft per user per problem per language
+}
+
+// ---------------------------------------------------------
+// Community & Discussions
+// ---------------------------------------------------------
+
+model Discussion {
+  id          String    @id @default(uuid())
+  title       String
+  content     String    @db.Text
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId   String
+  problem     Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  upvotes     Int       @default(0)
+  
+  comments    Comment[]
+
+  @@index([problemId])
+  @@index([userId])
+}
+
+model Comment {
+  id           String     @id @default(uuid())
+  content      String     @db.Text
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  upvotes      Int        @default(0)
+
+  @@index([discussionId])
+  @@index([userId])
+}

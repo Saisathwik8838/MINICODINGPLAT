@@ -1,0 +1,19 @@
+# Base image for Python execution
+FROM python:3.10-alpine
+
+# Create a non-root user to run the code
+RUN addgroup -S runner && adduser -S runner -G runner
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy the wrapper script
+COPY runners/runner.sh /usr/local/bin/runner
+RUN chmod +x /usr/local/bin/runner
+
+# Switch to the non-root user
+USER runner
+
+# Ensure we're running fully unprivileged
+# The worker will eventually pass `-v` to mount the code
+ENTRYPOINT ["/usr/local/bin/runner"]
