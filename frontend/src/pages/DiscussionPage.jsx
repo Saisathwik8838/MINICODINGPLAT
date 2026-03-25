@@ -75,7 +75,7 @@ export default function DiscussionPage() {
     const handleUpvote = async (discussionId, problemId) => {
         if (!user) return alert('Please login to upvote');
         try {
-            await api.post(`/api/v1/problems/${problemId}/discussions/${discussionId}/upvote`);
+            await api.post(`/problems/${problemId}/discussions/${discussionId}/upvote`);
             // Optimistically update
             setDiscussions(discussions.map(d => d.id === discussionId ? { ...d, upvotes: d.upvotes + 1 } : d));
         } catch (error) {

@@ -23,13 +23,7 @@ export const getLeaderboard = async (req, res, next) => {
             }
         });
 
-        // Optionally count total users for pagination, but might be slow for massive tables. 
-        // We'll limit it for this scale.
-        const totalUsers = await prisma.user.count({
-            where: {
-                totalScore: { gt: 0 }
-            }
-        });
+        const totalUsers = await prisma.user.count();
 
         res.status(200).json({
             status: 'success',

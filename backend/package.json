@@ -9,6 +9,9 @@
         "dev": "nodemon src/server.js",
         "test": "jest"
     },
+    "prisma": {
+        "seed": "node prisma/seed.js"
+    },
     "dependencies": {
         "@prisma/client": "^5.10.2",
         "bcryptjs": "^2.4.3",

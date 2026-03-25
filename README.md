@@ -51,11 +51,18 @@ docker compose up -d
 ```
 *Note: The frontend will boot automatically alongside the gateway.*
 
-### 4. Database Seeding (First-time only)
-While your stack is running, create the PostgreSQL table map for the very first time:
+### 4. Database Setup (First-time only)
+While your stack is running, create the PostgreSQL table map for the very first time and seed it:
 ```bash
-docker compose exec backend npx prisma migrate dev --name init
+docker compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma db seed
 ```
+
+### 5. Verify Everything Works
+  Backend health: http://localhost/api/v1/health
+  Frontend: http://localhost/
+  Admin login: email=admin@minileetcode.com password=Admin@123
+  After login, you should see 5 problems in the problems list.
 
 ---
 

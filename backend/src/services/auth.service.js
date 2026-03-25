@@ -86,10 +86,17 @@ export const getUserProfile = async (userId) => {
             totalSolved: true,
             totalScore: true,
             createdAt: true,
+            _count: {
+                select: { submissions: true }
+            }
         },
     });
 
     if (!user) throw new AppError('User not found', 404);
 
-    return user;
+    return {
+        ...user,
+        totalSubmissions: user._count.submissions,
+        _count: undefined
+    };
 };

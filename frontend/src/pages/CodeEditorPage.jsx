@@ -35,7 +35,7 @@ export default function CodeEditorPage() {
     useEffect(() => {
         const fetchProblem = async () => {
             try {
-                const { data } = await api.get(`/api/v1/problems/${slug}`);
+                const { data } = await api.get(`/problems/${slug}`);
                 const p = data.data.problem;
                 setProblem(p);
                 
@@ -83,7 +83,7 @@ export default function CodeEditorPage() {
         }
         
         try {
-            const { data } = await api.get(`/api/v1/submissions/${id}`);
+            const { data } = await api.get(`/submissions/${id}`);
             const sub = data.data.submission;
             
             if (sub.status === 'PENDING' || sub.status === 'PROCESSING') {
@@ -104,7 +104,7 @@ export default function CodeEditorPage() {
         setOutput(null);
 
         try {
-            const { data } = await api.post('/api/v1/submissions', {
+            const { data } = await api.post('/submissions', {
                 code,
                 language,
                 problemId: problem.id,
@@ -125,7 +125,7 @@ export default function CodeEditorPage() {
         if (tab === 'history' && problem) {
             setLoadingHistory(true);
             try {
-                const { data } = await api.get(`/api/v1/submissions?problemId=${problem.id}&limit=20`);
+                const { data } = await api.get(`/submissions?problemId=${problem.id}&limit=20`);
                 setHistory(data.data.submissions);
             } catch (err) {
                 console.error("Failed to load history");

@@ -19,11 +19,11 @@ export default function DashboardPage() {
         const fetchData = async () => {
             try {
                 const [authRes, subsRes, accRes, countsRes, profileRes] = await Promise.all([
-                    api.get('/api/v1/auth/me'),
-                    api.get('/api/v1/submissions?limit=10'),
-                    api.get('/api/v1/submissions?status=ACCEPTED&limit=1'),
-                    api.get('/api/v1/problems?countOnly=true'),
-                    api.get(`/api/v1/profile/${authUser.username}`)
+                    api.get('/auth/me'),
+                    api.get('/submissions?limit=10'),
+                    api.get('/submissions?status=ACCEPTED&limit=1'),
+                    api.get('/problems?countOnly=true'),
+                    api.get(`/profile/${authUser.username}`)
                 ]);
 
                 setUserStats(authRes.data.data.user);
