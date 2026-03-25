@@ -26,14 +26,14 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { data } = await axios.get('/api/v1/auth/refresh', { withCredentials: true });
+                const { data } = await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true });
                 localStorage.setItem('accessToken', data.data.accessToken);
                 originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 // Refresh failed, clear session
                 localStorage.removeItem('accessToken');
-                window.location.href = '/auth'; // Simple redirect to Login
+                // Removed forced redirection here to prevent infinite loop on checkSession
             }
         }
         return Promise.reject(error);
