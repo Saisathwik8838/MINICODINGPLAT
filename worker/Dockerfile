@@ -1,7 +1,8 @@
+FROM docker:cli AS docker-cli
 FROM node:20
 
-# Install Docker CLI via apt instead of apk on Debian
-RUN apt-get update && apt-get install -y docker.io
+# Copy docker CLI from the official docker image to avoid slow apt-get installs
+COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
 
 WORKDIR /usr/src/app
 

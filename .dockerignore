@@ -1,8 +1,9 @@
 node_modules
+**/node_modules
 npm-debug.log
 .env
 .git
 .tmp
 .cache
-tmp/
-logs/
+**/tmp
+**/logs
