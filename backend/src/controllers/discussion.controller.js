@@ -116,3 +116,58 @@ export const getComments = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getAllDiscussions = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20, sort = 'top' } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        const orderBy = sort === 'recent' 
+            ? [{ createdAt: 'desc' }] 
+            : [{ upvotes: 'desc' }, { createdAt: 'desc' }];
+
+        const [discussions, total] = await Promise.all([
+            prisma.discussion.findMany({
+                skip,
+                take: limitNum,
+                orderBy,
+                include: {
+                    user: { select: { username: true } },
+                    problem: { select: { title: true, slug: true, difficulty: true } },
+                    _count: { select: { comments: true } }
+                }
+            }),
+            prisma.discussion.count()
+        ]);
+
+        const formatted = discussions.map(d => ({
+            id: d.id,
+            title: d.title,
+            contentPreview: d.content.substring(0, 120),
+            author: d.user.username,
+            problemId: d.problemId,
+            problem: d.problem, // keeping title/slug inside
+            upvotes: d.upvotes,
+            commentCount: d._count.comments,
+            tags: [], // Tags aren't in schema, mocking it
+            createdAt: d.createdAt
+        }));
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                discussions: formatted,
+                pagination: {
+                    total,
+                    page: pageNum,
+                    totalPages: Math.ceil(total / limitNum)
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+

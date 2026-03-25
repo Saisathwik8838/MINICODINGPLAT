@@ -1,8 +1,9 @@
 FROM docker:cli AS docker-cli
-FROM node:20
+FROM node:20-alpine
 
-# Copy docker CLI from the official docker image to avoid slow apt-get installs
 COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
+
+RUN apk add --no-cache openssl
 
 WORKDIR /usr/src/app
 

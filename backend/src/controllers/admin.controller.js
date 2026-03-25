@@ -1,5 +1,6 @@
 import { prisma } from '../config/db.js';
 import { AppError } from '../middlewares/errorHandler.js';
+import { submissionQueue } from '../config/queue.js';
 
 // ---- Problems Management ----
 
@@ -98,3 +99,153 @@ export const getAllUsers = async (req, res, next) => {
         next(error);
     }
 };
+
+export const updateUserRole = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { role } = req.body;
+
+        if (!['USER', 'ADMIN'].includes(role)) {
+            return next(new AppError('Invalid role. Must be USER or ADMIN.', 400));
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { role },
+            select: { id: true, username: true, role: true }
+        });
+
+        res.status(200).json({ status: 'success', data: { user } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getStats = async (req, res, next) => {
+    try {
+        const [totalUsers, totalProblems, totalSubmissions, waiting, active] = await Promise.all([
+            prisma.user.count(),
+            prisma.problem.count(),
+            prisma.submission.count(),
+            submissionQueue.getWaitingCount(),
+            submissionQueue.getActiveCount(),
+        ]);
+
+        res.status(200).json({
+            status: 'success',
+            data: { 
+                totalUsers, 
+                totalProblems, 
+                totalSubmissions, 
+                queueStatus: waiting + active 
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTestCases = async (req, res, next) => {
+    try {
+        const { problemId } = req.params;
+
+        const testCases = await prisma.testCase.findMany({
+            where: { problemId },
+            orderBy: { order: 'asc' }
+        });
+
+        res.status(200).json({ status: 'success', data: { testCases } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteTestCase = async (req, res, next) => {
+    try {
+        const { testCaseId } = req.params;
+
+        await prisma.testCase.delete({
+            where: { id: testCaseId }
+        });
+
+        res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllSubmissions = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        const [submissions, total] = await Promise.all([
+            prisma.submission.findMany({
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: { select: { username: true } },
+                    problem: { select: { title: true } }
+                }
+            }),
+            prisma.submission.count()
+        ]);
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                submissions,
+                pagination: {
+                    total,
+                    page: pageNum,
+                    totalPages: Math.ceil(total / limitNum)
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllProblems = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        const [problems, total] = await Promise.all([
+            prisma.problem.findMany({
+                skip,
+                take: limitNum,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    _count: {
+                        select: {
+                            submissions: true
+                        }
+                    }
+                }
+            }),
+            prisma.problem.count()
+        ]);
+
+        res.status(200).json({
+            status: 'success',
+            data: {
+                problems,
+                pagination: {
+                    total,
+                    page: pageNum,
+                    totalPages: Math.ceil(total / limitNum)
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+

@@ -10,7 +10,10 @@ import { logger } from './utils/logger.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import leaderboardRoutes from './routes/leaderboard.routes.js';
-import discussionRoutes from './routes/discussion.routes.js';
+import discussionRoutes, { standaloneDiscussionRoutes } from './routes/discussion.routes.js';
+import problemRoutes from './routes/problem.routes.js';
+import submissionRoutes from './routes/submission.routes.js';
+import profileRoutes from './routes/profile.routes.js';
 import client from 'prom-client';
 
 const app = express();
@@ -60,6 +63,10 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/leaderboard', leaderboardRoutes);
+app.use('/api/v1/problems', problemRoutes);
+app.use('/api/v1/submissions', submissionRoutes);
+app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/discussions', standaloneDiscussionRoutes); // Global standalone discussions
 app.use('/api/v1/problems/:problemId/discussions', discussionRoutes); // Nested route structure
 
 // Prometheus endpoint

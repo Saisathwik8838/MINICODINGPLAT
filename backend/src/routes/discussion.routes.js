@@ -2,6 +2,11 @@ import { Router } from 'express';
 import * as discussionController from '../controllers/discussion.controller.js';
 import { protect } from '../middlewares/auth.middleware.js';
 
+// ---- Standalone Global Router ----
+export const standaloneDiscussionRoutes = Router();
+standaloneDiscussionRoutes.get('/', discussionController.getAllDiscussions);
+
+// ---- Nested Problem Router ----
 const router = Router({ mergeParams: true });
 // mergeParams required if we mount this as /api/v1/problems/:problemId/discussions
 

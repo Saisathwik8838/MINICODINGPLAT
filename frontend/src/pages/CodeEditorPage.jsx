@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { Play, Send, Settings, CheckCircle, XCircle, Clock, Database, ChevronDown } from 'lucide-react';
+import { Play, Send, CheckCircle, AlertTriangle, Clock, Database, ChevronDown, X, History, Loader2, Code2 } from 'lucide-react';
+import api from '../api/axios.js';
 
 const BOILERPLATE = {
     PYTHON: `def solve(nums, target):\n    # Write your code here\n    pass\n`,
@@ -10,70 +12,201 @@ const BOILERPLATE = {
 };
 
 export default function CodeEditorPage() {
+    const { slug } = useParams();
+    const [problem, setProblem] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [language, setLanguage] = useState('PYTHON');
-    const [code, setCode] = useState(BOILERPLATE['PYTHON']);
+    const [code, setCode] = useState('');
+    const [activeTab, setActiveTab] = useState('testcases'); // 'testcases', 'result', 'history'
+    
+    // Execution State
     const [output, setOutput] = useState(null);
-    const [isRunning, setIsRunning] = useState(false);
+    const [isExecuting, setIsExecuting] = useState(false);
+    
+    // History State
+    const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [selectedPastCode, setSelectedPastCode] = useState(null);
+
+    const autosaveTimer = useRef(null);
+
+    useEffect(() => {
+        const fetchProblem = async () => {
+            try {
+                const { data } = await api.get(`/api/v1/problems/${slug}`);
+                const p = data.data.problem;
+                setProblem(p);
+                
+                // Load draft or boilerplate
+                const draft = localStorage.getItem(`draft_${p.id}_PYTHON`);
+                setCode(draft || BOILERPLATE['PYTHON']);
+            } catch (err) {
+                setError(err.response?.status === 404 ? 'Problem not found' : 'Error loading problem');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProblem();
+    }, [slug]);
+
+    // Autosave Draft
+    useEffect(() => {
+        if (!problem || !code) return;
+        
+        // Prevent saving boilerplate as draft if they just switched
+        if (Object.values(BOILERPLATE).includes(code)) return;
+
+        if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+        autosaveTimer.current = setTimeout(() => {
+            localStorage.setItem(`draft_${problem.id}_${language}`, code);
+        }, 1000);
+
+        return () => clearTimeout(autosaveTimer.current);
+    }, [code, language, problem]);
 
     const handleLanguageChange = (e) => {
         const lang = e.target.value;
         setLanguage(lang);
-        setCode(BOILERPLATE[lang]);
+        if (problem) {
+            const draft = localStorage.getItem(`draft_${problem.id}_${lang}`);
+            setCode(draft || BOILERPLATE[lang]);
+        }
     };
 
-    const handleRunCode = () => {
-        setIsRunning(true);
-        // Simulate network delay
-        setTimeout(() => {
-            setOutput({
-                status: 'Accepted',
-                runtime: '45ms',
-                memory: '12.4 MB',
-                stdout: '[0, 1]\n',
-            });
-            setIsRunning(false);
-        }, 1500);
+    const pollSubmission = async (id, attempt = 1) => {
+        if (attempt > 15) {
+            setOutput({ status: 'TIMEOUT', detail: 'Execution took too long.' });
+            setIsExecuting(false);
+            return;
+        }
+        
+        try {
+            const { data } = await api.get(`/api/v1/submissions/${id}`);
+            const sub = data.data.submission;
+            
+            if (sub.status === 'PENDING' || sub.status === 'PROCESSING') {
+                setTimeout(() => pollSubmission(id, attempt + 1), 1500);
+            } else {
+                setOutput(sub);
+                setIsExecuting(false);
+            }
+        } catch (err) {
+            setOutput({ status: 'INTERNAL_ERROR', detail: 'Failed to fetch result.' });
+            setIsExecuting(false);
+        }
     };
+
+    const handleExecute = async (isRun) => {
+        setIsExecuting(true);
+        setActiveTab('result');
+        setOutput(null);
+
+        try {
+            const { data } = await api.post('/api/v1/submissions', {
+                code,
+                language,
+                problemId: problem.id,
+                isRun
+            });
+            pollSubmission(data.data.submissionId);
+        } catch (err) {
+            setOutput({ 
+                status: 'INTERNAL_ERROR', 
+                detail: err.response?.data?.message || 'Failed to submit code.' 
+            });
+            setIsExecuting(false);
+        }
+    };
+
+    const handleTabSwitch = async (tab) => {
+        setActiveTab(tab);
+        if (tab === 'history' && problem) {
+            setLoadingHistory(true);
+            try {
+                const { data } = await api.get(`/api/v1/submissions?problemId=${problem.id}&limit=20`);
+                setHistory(data.data.submissions);
+            } catch (err) {
+                console.error("Failed to load history");
+            } finally {
+                setLoadingHistory(false);
+            }
+        }
+    };
+
+    // Render markdown dangerously
+    const createMarkup = (text) => {
+        if (!text) return { __html: '' };
+        // Basic markdown formatting for description safely
+        let html = text
+            .replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>')
+            .replace(/`(.*?)`/g, '<code>$1</code>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br/>');
+        return { __html: `<p>${html}</p>` };
+    };
+
+    if (loading) {
+        return (
+            <div className="flex h-full w-full bg-dark-900 gap-2 p-2">
+                <div className="w-[40%] glass-panel animate-pulse p-6"><div className="h-8 bg-dark-700 w-1/2 mb-4"></div><div className="h-4 bg-dark-700 w-full mb-2"></div><div className="h-4 bg-dark-700 w-3/4"></div></div>
+                <div className="flex-1 glass-panel animate-pulse bg-dark-800"></div>
+            </div>
+        );
+    }
+
+    if (error || !problem) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 h-full bg-dark-900 text-center">
+                <AlertTriangle className="w-16 h-16 text-gray-600 mb-4 opacity-50" />
+                <h2 className="text-2xl font-bold text-white mb-2">{error || 'Problem Not Found'}</h2>
+                <Link to="/problems" className="mt-4 px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg">Browse Problems</Link>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-full w-full bg-dark-900 gap-2 p-2 relative">
+            
+            {/* Modal for viewing past code */}
+            {selectedPastCode && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-dark-900 border border-dark-600 rounded-xl w-full max-w-4xl h-[80vh] flex flex-col shadow-2xl">
+                        <div className="px-6 py-4 border-b border-dark-700 flex justify-between items-center bg-dark-800 rounded-t-xl">
+                            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Code2 className="w-5 h-5 text-primary-400"/> Submission Code</h3>
+                            <button onClick={() => setSelectedPastCode(null)} className="text-gray-400 hover:text-white transition-colors"><X className="w-5 h-5"/></button>
+                        </div>
+                        <div className="flex-1">
+                            <Editor
+                                height="100%"
+                                language={(selectedPastCode.language || 'python').toLowerCase()}
+                                theme="vs-dark"
+                                value={selectedPastCode.code}
+                                options={{ readOnly: true, minimap: { enabled: false } }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* LEFT PANEL: Problem Statement */}
             <div className="w-[40%] flex flex-col gap-2 relative">
                 <div className="glass-panel flex-1 flex flex-col overflow-hidden relative">
-
                     <div className="h-12 border-b border-dark-700/50 flex items-center px-4 bg-dark-800/50 z-10 shrink-0">
                         <h2 className="font-semibold text-gray-200">Description</h2>
                     </div>
 
                     <div className="p-6 overflow-y-auto code-scroll">
-                        <h1 className="text-2xl font-bold mb-2">1. Two Sum</h1>
+                        <h1 className="text-2xl font-bold mb-2">{problem.title}</h1>
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="px-2.5 py-1 bg-green-500/10 text-green-400 text-xs font-medium rounded-full border border-green-500/20">Easy</span>
+                            <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${problem.difficulty === 'EASY' ? 'bg-green-500/10 text-green-400 border-green-500/20' : problem.difficulty === 'MEDIUM' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>{problem.difficulty}</span>
+                            <span className="text-xs text-gray-400 bg-dark-800 px-2 py-1 rounded">Time Limit: {problem.timeLimit}s</span>
+                            <span className="text-xs text-gray-400 bg-dark-800 px-2 py-1 rounded">Memory Limit: {problem.memoryLimit}MB</span>
                         </div>
 
-                        <div className="prose prose-invert text-gray-300 text-sm leading-relaxed">
-                            <p>Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.</p>
-                            <p>You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.</p>
-
-                            <div className="mt-8 space-y-4">
-                                <div className="bg-dark-900/50 p-4 rounded-lg border border-dark-700/50">
-                                    <p className="font-semibold text-white mb-2 text-xs uppercase tracking-wider">Example 1</p>
-                                    <p><strong>Input:</strong> nums = [2,7,11,15], target = 9</p>
-                                    <p><strong>Output:</strong> [0,1]</p>
-                                    <p><strong>Explanation:</strong> Because nums[0] + nums[1] == 9, we return [0, 1].</p>
-                                </div>
-                            </div>
-
-                            <div className="mt-8">
-                                <h3 className="font-semibold text-white mb-2 text-xs uppercase tracking-wider">Constraints</h3>
-                                <ul className="list-disc pl-5 space-y-1">
-                                    <li><code>2 &lt;= nums.length &lt;= 10<sup>4</sup></code></li>
-                                    <li><code>-10<sup>9</sup> &lt;= nums[i] &lt;= 10<sup>9</sup></code></li>
-                                    <li><code>-10<sup>9</sup> &lt;= target &lt;= 10<sup>9</sup></code></li>
-                                </ul>
-                            </div>
-                        </div>
+                        <div className="prose prose-invert text-gray-300 text-sm leading-relaxed" dangerouslySetInnerHTML={createMarkup(problem.description)}></div>
                     </div>
                 </div>
             </div>
@@ -83,7 +216,6 @@ export default function CodeEditorPage() {
 
                 {/* Monaco Editor Section */}
                 <div className="glass-panel flex-[2] flex flex-col overflow-hidden relative">
-
                     <div className="h-[46px] bg-dark-800/80 border-b border-dark-700/50 flex items-center justify-between px-4 z-10 shrink-0">
                         <div className="relative group cursor-pointer inline-flex items-center gap-2 bg-dark-700/50 hover:bg-dark-600/50 transition-colors px-3 py-1.5 rounded-md border border-dark-600/50">
                             <select
@@ -102,18 +234,18 @@ export default function CodeEditorPage() {
 
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={handleRunCode}
-                                disabled={isRunning}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium rounded-md transition-all border border-dark-600/50 hover:border-dark-500 focus:ring-2 focus:ring-dark-500 disabled:opacity-50"
+                                onClick={() => handleExecute(true)}
+                                disabled={isExecuting}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium rounded-md transition-all border border-dark-600/50 hover:border-dark-500 disabled:opacity-50"
                             >
-                                {isRunning ? (
-                                    <div className="w-4 h-4 rounded-full border-2 border-gray-400 border-t-white animate-spin" />
-                                ) : (
-                                    <Play className="w-4 h-4" />
-                                )}
+                                {isExecuting ? <Loader2 className="w-4 h-4 animate-spin text-gray-400"/> : <Play className="w-4 h-4" />}
                                 Run
                             </button>
-                            <button className="flex items-center gap-1.5 px-4 py-1.5 bg-primary-500 hover:bg-primary-400 text-white text-sm font-medium rounded-md shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all hover:shadow-[0_0_20px_rgba(96,165,250,0.5)]">
+                            <button 
+                                onClick={() => handleExecute(false)}
+                                disabled={isExecuting}
+                                className="flex items-center gap-1.5 px-4 py-1.5 bg-primary-500 hover:bg-primary-400 text-white text-sm font-medium rounded-md shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all hover:shadow-[0_0_20px_rgba(96,165,250,0.5)] disabled:opacity-50"
+                            >
                                 <Send className="w-4 h-4" />
                                 Submit
                             </button>
@@ -131,85 +263,100 @@ export default function CodeEditorPage() {
                                 minimap: { enabled: false },
                                 fontSize: 14,
                                 fontFamily: "JetBrains Mono, Menlo, Monaco, Consolas, monospace",
-                                lineHeight: 24,
                                 padding: { top: 16 },
                                 scrollBeyondLastLine: false,
-                                smoothScrolling: true,
-                                cursorBlinking: "smooth",
-                                cursorSmoothCaretAnimation: "on",
-                                formatOnPaste: true,
-                                scrollbar: {
-                                    verticalScrollbarSize: 8,
-                                    horizontalScrollbarSize: 8,
-                                }
+                                smoothScrolling: true
                             }}
                         />
                     </div>
                 </div>
 
-                {/* Console / Output Section */}
+                {/* Console Section */}
                 <div className="glass-panel flex-1 flex flex-col overflow-hidden relative min-h-[200px]">
                     <div className="h-10 bg-dark-800/80 border-b border-dark-700/50 flex items-center px-4 z-10 shrink-0 gap-6">
-                        <button className="text-sm font-medium text-gray-200 border-b-2 border-primary-500 h-full px-1">Test Cases</button>
-                        <button className="text-sm font-medium text-gray-500 hover:text-gray-300 h-full px-1 transition-colors">Test Result</button>
+                        <button onClick={() => handleTabSwitch('testcases')} className={`text-sm font-medium h-full px-1 transition-colors ${activeTab === 'testcases' ? 'text-gray-200 border-b-2 border-primary-500' : 'text-gray-500 hover:text-gray-300'}`}>Test Cases</button>
+                        <button onClick={() => handleTabSwitch('result')} className={`text-sm font-medium h-full px-1 transition-colors ${activeTab === 'result' ? 'text-gray-200 border-b-2 border-primary-500' : 'text-gray-500 hover:text-gray-300'}`}>Test Result</button>
+                        <button onClick={() => handleTabSwitch('history')} className={`text-sm font-medium h-full px-1 transition-colors flex items-center gap-1.5 ${activeTab === 'history' ? 'text-gray-200 border-b-2 border-primary-500' : 'text-gray-500 hover:text-gray-300'}`}><History className="w-3.5 h-3.5"/> Submissions</button>
                     </div>
 
                     <div className="p-4 overflow-y-auto code-scroll flex-1">
-                        {output ? (
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-xl font-bold text-success flex items-center gap-2">
-                                        <CheckCircle className="w-6 h-6" />
-                                        {output.status}
-                                    </h3>
-                                </div>
-
-                                <div className="flex gap-4 mb-4">
-                                    <div className="flex items-center gap-1.5 text-sm text-gray-400 bg-dark-900/50 px-3 py-1.5 rounded-md border border-dark-700 relative overflow-hidden group">
-                                        <Clock className="w-4 h-4 text-amber-400" />
-                                        Runtime: <span className="text-gray-200 font-mono font-medium">{output.runtime}</span>
-                                        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-dark-600">
-                                            <div className="h-full bg-amber-400 w-[15%]" />
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-sm text-gray-400 bg-dark-900/50 px-3 py-1.5 rounded-md border border-dark-700 relative overflow-hidden">
-                                        <Database className="w-4 h-4 text-emerald-400" />
-                                        Memory: <span className="text-gray-200 font-mono font-medium">{output.memory}</span>
-                                        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-dark-600">
-                                            <div className="h-full bg-emerald-400 w-[25%]" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Stdout</p>
-                                    <pre className="bg-dark-900 p-3 rounded border border-dark-700/50 text-gray-300 font-mono text-sm shadow-inner">
-                                        {output.stdout || "No standard output."}
-                                    </pre>
-                                </div>
-                            </div>
-                        ) : (
+                        {activeTab === 'testcases' && (
                             <div className="flex flex-col gap-3">
-                                <div className="flex gap-2">
-                                    <button className="px-3 py-1.5 bg-dark-700 text-white rounded-md text-sm font-medium shadow-sm hover:bg-dark-600 transition-colors">Case 1</button>
-                                    <button className="px-3 py-1.5 hover:bg-dark-700/50 text-gray-400 rounded-md text-sm font-medium transition-colors">Case 2</button>
-                                    <button className="px-3 py-1.5 hover:bg-dark-700/50 text-gray-400 rounded-md text-sm font-medium transition-colors">Case 3</button>
-                                </div>
-                                <div className="mt-2 space-y-4">
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-400 mb-1.5">nums =</p>
-                                        <div className="bg-dark-900/80 border border-dark-700/50 p-2.5 rounded-md font-mono text-sm text-gray-300 shadow-inner">[2, 7, 11, 15]</div>
+                                {problem.testCases && problem.testCases.map((tc, idx) => (
+                                    <div key={tc.id} className="bg-dark-900 border border-dark-700/50 rounded p-3">
+                                        <p className="text-xs font-semibold text-gray-400 mb-1">Test Case {idx + 1}</p>
+                                        <div className="text-sm font-mono text-gray-300 bg-dark-800 p-2 rounded mb-2">Input: {tc.input}</div>
+                                        <div className="text-sm font-mono text-gray-300 bg-dark-800 p-2 rounded">Expected: {tc.expectedOutput}</div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-400 mb-1.5">target =</p>
-                                        <div className="bg-dark-900/80 border border-dark-700/50 p-2.5 rounded-md font-mono text-sm text-gray-300 shadow-inner">9</div>
-                                    </div>
-                                </div>
+                                ))}
+                                {(!problem.testCases || problem.testCases.length === 0) && <p className="text-gray-500 text-sm">No visible testcases available.</p>}
                             </div>
+                        )}
+
+                        {activeTab === 'result' && (
+                            output ? (
+                                <div className="space-y-4 animate-in fade-in">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className={`text-xl font-bold flex items-center gap-2 ${['ACCEPTED', 'success'].includes(output.status) ? 'text-green-400' : 'text-red-400'}`}>
+                                            {['ACCEPTED', 'success'].includes(output.status) ? <CheckCircle className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
+                                            {output.status.replace(/_/g, ' ')}
+                                        </h3>
+                                        {output.testcasesPassed !== undefined && (
+                                            <span className="text-sm font-medium text-gray-400">
+                                                Passed: <strong className="text-white">{output.testcasesPassed} / {output.totalTestcases}</strong>
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-4 mb-4">
+                                        <div className="flex items-center gap-1.5 text-sm text-gray-400 bg-dark-900/50 px-3 py-1.5 rounded-md border border-dark-700">
+                                            <Clock className="w-4 h-4 text-amber-400" /> Runtime: <span className="text-gray-200 font-mono font-medium">{output.runtime ? `${output.runtime}ms` : '-'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-sm text-gray-400 bg-dark-900/50 px-3 py-1.5 rounded-md border border-dark-700">
+                                            <Database className="w-4 h-4 text-emerald-400" /> Memory: <span className="text-gray-200 font-mono font-medium">{output.memory ? `${output.memory}MB` : '-'}</span>
+                                        </div>
+                                    </div>
+                                    {(output.detail || output.stdout || output.error) && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Details / Output</p>
+                                            <pre className="bg-dark-900 p-3 rounded border border-dark-700/50 text-gray-300 font-mono text-sm shadow-inner whitespace-pre-wrap">
+                                                {output.detail || output.error || output.stdout || "No output generated."}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : isExecuting ? (
+                                <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-3">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+                                    <p className="text-sm font-medium">Executing code in sandbox...</p>
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">Run your code to see the results here.</p>
+                            )
+                        )}
+
+                        {activeTab === 'history' && (
+                            loadingHistory ? <div className="text-center mt-4"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-500"/></div> :
+                            history.length === 0 ? <p className="text-gray-500 text-sm">No submissions found for this problem.</p> :
+                            <table className="w-full text-left text-sm text-gray-300">
+                                <thead className="bg-dark-800 text-xs text-gray-500 border-b border-dark-700">
+                                    <tr><th className="px-4 py-2">Date</th><th className="px-4 py-2">Status</th><th className="px-4 py-2">Lang</th><th className="px-4 py-2">Runtime</th></tr>
+                                </thead>
+                                <tbody>
+                                    {history.map(s => (
+                                        <tr key={s.id} onClick={() => setSelectedPastCode(s)} className="border-b border-dark-800 hover:bg-dark-800/50 cursor-pointer transition-colors group">
+                                            <td className="px-4 py-3 text-gray-400 text-xs">{new Date(s.createdAt).toLocaleString()}</td>
+                                            <td className="px-4 py-3 font-semibold text-xs group-hover:text-white transition-colors">
+                                                <span className={s.status === 'ACCEPTED' ? 'text-green-500' : 'text-red-400'}>{s.status.replace(/_/g, ' ')}</span>
+                                            </td>
+                                            <td className="px-4 py-3 font-mono text-xs">{s.language}</td>
+                                            <td className="px-4 py-3 font-mono text-xs text-amber-400">{s.runtime ? `${s.runtime}ms` : '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         )}
                     </div>
                 </div>
-
             </div>
         </div>
     );
