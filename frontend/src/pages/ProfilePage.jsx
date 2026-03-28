@@ -16,7 +16,7 @@ export default function ProfilePage() {
             setLoading(true);
             setError(null);
             try {
-                const { data } = await api.get(`/api/v1/profile/${username}`);
+                const { data } = await api.get(`/profile/${username}`);
                 setProfile(data.data);
             } catch (err) {
                 setError(err.response?.status === 404 ? 'User not found' : 'Failed to load profile');

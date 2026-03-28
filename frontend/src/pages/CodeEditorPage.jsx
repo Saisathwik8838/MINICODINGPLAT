@@ -5,10 +5,10 @@ import { Play, Send, CheckCircle, AlertTriangle, Clock, Database, ChevronDown, X
 import api from '../api/axios.js';
 
 const BOILERPLATE = {
-    PYTHON: `def solve(nums, target):\n    # Write your code here\n    pass\n`,
-    JAVASCRIPT: `function solve(nums, target) {\n    // Write your code here\n}\n`,
-    CPP: `#include <iostream>\n#include <vector>\n\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> solve(vector<int>& nums, int target) {\n        // Write your code here\n    }\n};\n`,
-    JAVA: `class Main {\n    public static void main(String[] args) {\n        // Setup testcase here\n    }\n\n    public int[] solve(int[] nums, int target) {\n        // Write your code here\n        return new int[]{};\n    }\n}\n`
+    PYTHON: `import sys\ninput_data = sys.stdin.read().split()\n# Parse your input from input_data\n# Write your solution here\n# Print your output\n`,
+    JAVASCRIPT: `const lines = require('fs').readFileSync('/dev/stdin','utf8').trim().split('\\n');\n// Parse your input from lines\n// Write your solution here\n// console.log(result);\n`,
+    CPP: `#include <iostream>\n#include <vector>\nusing namespace std;\nint main() {\n    // Read input from stdin\n    // Write your solution here\n    return 0;\n}\n`,
+    JAVA: `import java.util.Scanner;\nclass Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Read input from stdin\n        // Write your solution here\n    }\n}\n`
 };
 
 export default function CodeEditorPage() {
@@ -282,14 +282,14 @@ export default function CodeEditorPage() {
                     <div className="p-4 overflow-y-auto code-scroll flex-1">
                         {activeTab === 'testcases' && (
                             <div className="flex flex-col gap-3">
-                                {problem.testCases && problem.testCases.map((tc, idx) => (
+                                {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
                                     <div key={tc.id} className="bg-dark-900 border border-dark-700/50 rounded p-3">
                                         <p className="text-xs font-semibold text-gray-400 mb-1">Test Case {idx + 1}</p>
                                         <div className="text-sm font-mono text-gray-300 bg-dark-800 p-2 rounded mb-2">Input: {tc.input}</div>
                                         <div className="text-sm font-mono text-gray-300 bg-dark-800 p-2 rounded">Expected: {tc.expectedOutput}</div>
                                     </div>
                                 ))}
-                                {(!problem.testCases || problem.testCases.length === 0) && <p className="text-gray-500 text-sm">No visible testcases available.</p>}
+                                {(!problem.testCases || problem.testCases.filter(tc => !tc.isHidden).length === 0) && <p className="text-gray-500 text-sm">No visible testcases available.</p>}
                             </div>
                         )}
 

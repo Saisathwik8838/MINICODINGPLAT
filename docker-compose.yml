@@ -80,7 +80,7 @@ services:
     # We map the host's docker socket into the worker container (Docker-out-of-Docker).
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./worker/tmp:/usr/src/app/tmp # Shared temp space for code files
+      - minileetcode-tmp:/usr/src/app/tmp # Shared volume for code execution
       - platform-logs:/usr/src/app/logs
     depends_on:
       - postgres
@@ -161,6 +161,7 @@ volumes:
   prometheus-data:
   grafana-data:
   platform-logs:
+  minileetcode-tmp:
 
 
 networks:

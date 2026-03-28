@@ -21,7 +21,7 @@ export default function DiscussionPage() {
     const fetchDiscussions = async (pageNum, sortType) => {
         setLoading(true);
         try {
-            const { data } = await api.get(`/api/v1/discussions?page=${pageNum}&limit=10&sort=${sortType}`);
+            const { data } = await api.get(`/discussions?page=${pageNum}&limit=10&sort=${sortType}`);
             setDiscussions(data.data.discussions || []);
             setTotalPages(data.data.pagination.totalPages);
             setPage(pageNum);
@@ -35,7 +35,7 @@ export default function DiscussionPage() {
 
     const fetchProblems = async () => {
         try {
-            const { data } = await api.get('/api/v1/problems');
+            const { data } = await api.get('/problems');
             setProblems(data.data.problems || []);
         } catch (error) {
             console.error('Failed to fetch problems', error);
@@ -58,7 +58,7 @@ export default function DiscussionPage() {
         if (!formData.title || !formData.content || !formData.problemId) return;
         setSubmitting(true);
         try {
-            await api.post(`/api/v1/problems/${formData.problemId}/discussions`, {
+            await api.post(`/problems/${formData.problemId}/discussions`, {
                 title: formData.title,
                 content: formData.content
             });

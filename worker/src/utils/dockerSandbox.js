@@ -60,12 +60,12 @@ export const runCodeInSandbox = async (code, language, input = '', limits = { ti
         // Stage 1: Compilation (If needed)
         if (config.compileCommand) {
             const compileArgs = config.compileCommand(fileName, 'main.out');
-            await executeDockerCommand(config.image, tempDir, compileArgs, '', limits);
+            await executeDockerCommand(config.image, executionId, compileArgs, '', limits);
         }
 
         // Stage 2: Execution
         const runArgs = config.runCommand(language === 'CPP' ? 'main.out' : fileName);
-        const result = await executeDockerCommand(config.image, tempDir, runArgs, input, limits);
+        const result = await executeDockerCommand(config.image, executionId, runArgs, input, limits);
 
         return result;
 
@@ -80,7 +80,7 @@ export const runCodeInSandbox = async (code, language, input = '', limits = { ti
 /**
  * Core function to run a Docker container with Hardened Security
  */
-const executeDockerCommand = (image, volumePath, commandArgs, stdinData, limits) => {
+const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits) => {
     return new Promise((resolve) => {
         const startTime = process.hrtime();
 
@@ -94,8 +94,8 @@ const executeDockerCommand = (image, volumePath, commandArgs, stdinData, limits)
             '--network=none',           // No internet access
             '--security-opt=no-new-privileges', // Prevent privilege escalation
             '--read-only',              // Root FS is read-only
-            `-v`, `${volumePath}:/usr/src/app`, // Mount code directory
-            '-w', '/usr/src/app',       // Set working dir
+            `-v`, `${env.DOCKER_VOLUME_NAME}:/usr/src/app`, // Mount shared volume
+            '-w', `/usr/src/app/${executionId}`, // Set working dir to specific execution folder
             image,
             ...commandArgs
         ];

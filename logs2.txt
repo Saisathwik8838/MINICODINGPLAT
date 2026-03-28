@@ -1,0 +1,341 @@
+﻿minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:38
+minileetcode-backend  |         throw new AppError(\`No generator available for slug "\${problem.slug}". Supported: \${getSupportedSlugs().join(', ')}\`, 400);
+minileetcode-backend  |                            ^
+minileetcode-backend  | 
+minileetcode-backend  | SyntaxError: Invalid or unexpected token
+minileetcode-backend  |     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
+minileetcode-backend  |     at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:146:18)
+minileetcode-backend  |     at #translate (node:internal/modules/esm/loader:497:12)
+minileetcode-backend  |     at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:544:27)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1

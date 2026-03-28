@@ -1,0 +1,110 @@
+﻿minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1
+minileetcode-backend  | file:///usr/src/app/src/services/testCaseGenerator.service.js:2
+minileetcode-backend  | import logger from '../utils/logger.js';
+minileetcode-backend  |        ^^^^^^
+minileetcode-backend  | SyntaxError: The requested module '../utils/logger.js' does not provide an export named 'default'
+minileetcode-backend  |     at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+minileetcode-backend  |     at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+minileetcode-backend  |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+minileetcode-backend  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+minileetcode-backend  | 
+minileetcode-backend  | Node.js v20.20.1

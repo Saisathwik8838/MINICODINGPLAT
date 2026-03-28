@@ -19,4 +19,5 @@ export const env = {
 
     QUEUE_NAME: process.env.QUEUE_NAME || 'submission-queue',
     WORKER_CONCURRENCY: parseInt(process.env.WORKER_CONCURRENCY || '5', 10),
+    DOCKER_VOLUME_NAME: process.env.DOCKER_VOLUME_NAME || 'minicodingplat_minileetcode-tmp',
 };

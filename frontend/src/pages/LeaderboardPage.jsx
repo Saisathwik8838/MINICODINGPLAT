@@ -15,7 +15,7 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async (pageNum) => {
         setLoading(true);
         try {
-            const { data } = await api.get(`/api/v1/leaderboard?page=${pageNum}&limit=${limit}`);
+            const { data } = await api.get(`/leaderboard?page=${pageNum}&limit=${limit}`);
             setLeaderboardData(data.data.leaderboard || []);
             setTotalPages(data.data.pagination.totalPages);
             setTotalUsers(data.data.pagination.total);

@@ -34,7 +34,7 @@ export default function ProblemsListPage() {
             if (diff !== 'All') params.append('difficulty', diff);
             if (query) params.append('search', query);
 
-            const { data } = await api.get(`/api/v1/problems?${params.toString()}`);
+            const { data } = await api.get(`/problems?${params.toString()}`);
             setProblems(data.data.problems || []);
             setTotal(data.data.pagination.total);
             setTotalPages(data.data.pagination.totalPages);
