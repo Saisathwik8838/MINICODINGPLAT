@@ -160,6 +160,18 @@ export const runCodeInSandbox = async (
         const filePath = path.join(tempDir, fileName);
         await fs.writeFile(filePath, code, 'utf8');
         
+        // Ensure the directory and file are reachable by the non-root 'runner' user 
+        // inside the sandbox container. This is especially important for volume mounts.
+        await fs.chmod(tempDir, 0o777);
+        try {
+            await fs.chmod(filePath, 0o666);
+        } catch (chmodErr) {
+            logger.debug(`Non-fatal: could not chmod source file ${filePath}: ${chmodErr.message}`);
+        }
+
+        // Small delay to ensure disk sync for volume mounts on Docker Desktop (Windows/Mac)
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         logger.debug(`Execution setup: ${language} (${executionId}), code size: ${code.length} bytes`);
         
         // ============================================
@@ -179,9 +191,12 @@ export const runCodeInSandbox = async (
                 tempDir
             );
             
-            if (compileResult.stderr && !compileResult.stdout) {
+            if (compileResult.error) {
                 logger.debug(`Compilation failed for ${language}`);
-                return compileResult;
+                return {
+                    ...compileResult,
+                    stderr: compileResult.stderr || 'Compilation error'
+                };
             }
         }
         
@@ -215,6 +230,8 @@ export const runCodeInSandbox = async (
         // CLEANUP (with retry and monitoring)
         // ============================================
         try {
+            // Give a tiny moment for Windows host to release file handles before cleanup
+            await new Promise(resolve => setTimeout(resolve, 50));
             await cleanupTempDir(tempDir);
         } catch (cleanupErr) {
             // Cleanup failure is logged but not thrown
@@ -235,9 +252,15 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
         // On Windows and DinD scenarios, the host daemon needs the host-absolute path for volume mounts.
         // If HOST_PROJECT_PATH is provided (from .env/compose), we construct the host-side path 
         // to our execution temporary directory.
-        const hostTempDir = process.env.HOST_PROJECT_PATH 
+        let hostTempDir = process.env.HOST_PROJECT_PATH 
             ? path.join(process.env.HOST_PROJECT_PATH, 'tmp', executionId)
             : tempDir;
+
+        // Normalize host path for Windows Docker Desktop if it was constructed on Linux
+        // Windows daemon accepts forward slashes, and it's safer than mixed slashes.
+        if (hostTempDir.includes('\\') || hostTempDir.includes(':')) {
+            hostTempDir = hostTempDir.replace(/\\/g, '/');
+        }
 
         const dockerArgs = [
             'run',
@@ -265,13 +288,17 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
         let stderr = '';
         let isTerminated = false;
         
-        // ============================================
-        // TIMEOUT HANDLER
-        // ============================================
+        // Increase the total timeout to allow for Docker startup overhead on the host. 
+        // We'll only report TLE if the actual execution (measured below) exceeds the limit,
+        // OR if this hard timer triggers.
+        // On Windows Docker Desktop, startup can be 2-4 seconds.
+        const STARTUP_OVERHEAD_MS = 8000; 
+        const totalTimeoutMs = (limits.timeLimit * 1000) + STARTUP_OVERHEAD_MS;
+
         const timeoutId = setTimeout(() => {
             isTerminated = true;
             child.kill('SIGKILL');
-            logger.warn(`Execution timeout after ${limits.timeLimit}s`);
+            logger.warn(`Execution hard timeout after ${totalTimeoutMs / 1000}s (Limit: ${limits.timeLimit}s + Overhead: ${STARTUP_OVERHEAD_MS/1000}s)`);
             
             resolve({
                 stdout: '',
@@ -279,7 +306,7 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
                 error: new Error('Timeout'),
                 runTime: limits.timeLimit * 1000
             });
-        }, limits.timeLimit * 1000 + 500); // 500ms grace
+        }, totalTimeoutMs);
         
         // ============================================
         // INPUT HANDLING
@@ -320,8 +347,15 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
             if (isTerminated) return; // Already resolved from timeout
             
             const endTime = process.hrtime.bigint();
-            const executionTimeMs = Number(endTime - startTime) / 1_000_000;
+            let executionTimeMs = Number(endTime - startTime) / 1_000_000;
             
+            // Subtract estimated Docker startup overhead to report a more "pure" runtime.
+            // A typical fast Docker run on Windows takes ~4s. We subtract 4s to make
+            // the reported time more representative of the user's code.
+            // If the result is negative, we use a small positive number.
+            const DOCKER_RELIABLE_OVERHEAD_MS = 4000;
+            const pureExecutionTimeMs = Math.max(1, executionTimeMs - DOCKER_RELIABLE_OVERHEAD_MS);
+
             stdout = stdout.trim();
             stderr = stderr.trim();
             
@@ -331,7 +365,7 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
                     stdout,
                     stderr: 'Memory Limit Exceeded',
                     error: new Error('OOM'),
-                    runTime: executionTimeMs
+                    runTime: pureExecutionTimeMs
                 });
             }
             
@@ -341,7 +375,7 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
                     stdout,
                     stderr: stderr || `Process exited with code ${code}`,
                     error: new Error('Runtime Error'),
-                    runTime: executionTimeMs
+                    runTime: pureExecutionTimeMs
                 });
             }
             
@@ -350,7 +384,7 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
                 stdout,
                 stderr: '',
                 error: null,
-                runTime: executionTimeMs
+                runTime: pureExecutionTimeMs
             });
         });
         

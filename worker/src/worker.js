@@ -37,6 +37,7 @@ const submissionWorker = new Worker(
     {
         connection: redisConnection,
         concurrency: env.WORKER_CONCURRENCY,
+        lockDuration: 300000, // 5 minutes (allows for many sequential test cases)
     }
 );
 
