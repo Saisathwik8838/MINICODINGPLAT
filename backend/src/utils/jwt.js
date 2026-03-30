@@ -3,11 +3,11 @@ import { env } from '../config/env.js';
 
 export const signTokens = (userId, role) => {
     const accessToken = jwt.sign({ userId, role }, env.JWT_SECRET, {
-        expiresIn: env.JWT_EXPIRES_IN,
+        expiresIn: env.JWT_EXPIRE,
     });
 
     const refreshToken = jwt.sign({ userId, role }, env.REFRESH_TOKEN_SECRET, {
-        expiresIn: env.REFRESH_TOKEN_EXPIRES_IN,
+        expiresIn: env.REFRESH_TOKEN_EXPIRE,
     });
 
     return { accessToken, refreshToken };

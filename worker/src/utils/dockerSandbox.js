@@ -11,23 +11,23 @@ import os from 'os';
  */
 const LANGUAGE_CONFIG = {
     PYTHON: {
-        image: 'python:3.10-alpine',
+        image: 'minileetcode-runner-python:latest',
         extension: '.py',
         runCommand: (file) => ['python3', file],
     },
     JAVASCRIPT: {
-        image: 'node:18-alpine',
+        image: 'minileetcode-runner-node:latest',
         extension: '.js',
         runCommand: (file) => ['node', file],
     },
     CPP: {
-        image: 'gcc:12',
+        image: 'minileetcode-runner-gcc:latest',
         extension: '.cpp',
         compileCommand: (src, out) => ['g++', '-O2', src, '-o', out],
         runCommand: (out) => [`./${out}`],
     },
     JAVA: {
-        image: 'eclipse-temurin:17-alpine',
+        image: 'minileetcode-runner-java:latest',
         extension: '.java',
         compileCommand: (src) => ['javac', src],
         runCommand: () => ['java', 'Main'],
@@ -175,7 +175,8 @@ export const runCodeInSandbox = async (
                 executionId,
                 compileArgs,
                 '',
-                { timeLimit: compileTimeout, memoryLimit: safeMemoryLimit, cpuLimit: safeCpuLimit }
+                { timeLimit: compileTimeout, memoryLimit: safeMemoryLimit, cpuLimit: safeCpuLimit },
+                tempDir
             );
             
             if (compileResult.stderr && !compileResult.stdout) {
@@ -195,7 +196,8 @@ export const runCodeInSandbox = async (
             executionId,
             runArgs,
             input,
-            { timeLimit: safeTimeLimit, memoryLimit: safeMemoryLimit, cpuLimit: safeCpuLimit }
+            { timeLimit: safeTimeLimit, memoryLimit: safeMemoryLimit, cpuLimit: safeCpuLimit },
+            tempDir
         );
         
         return result;
@@ -226,10 +228,17 @@ export const runCodeInSandbox = async (
  * Executes Docker command with timeout and resource limits
  * @private
  */
-const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits) => {
+const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits, tempDir) => {
     return new Promise((resolve) => {
         const startTime = process.hrtime.bigint();
         
+        // On Windows and DinD scenarios, the host daemon might need the host path
+        // We assume the caller (worker) has its /usr/src/app (or CWD) root path passed to it
+        // and we use that for the mount.
+        // For now, we will try to use the absolute path from the host perspective if available,
+        // or rely on a bind mount that matches.
+        const hostTempDir = process.env.HOST_TEMP_DIR || tempDir;
+
         const dockerArgs = [
             'run',
             '--rm',                              // Remove container after execution
@@ -241,8 +250,8 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
             '--security-opt=no-new-privileges', // Prevent privilege escalation
             '--read-only',                       // Read-only root filesystem
             '--tmpfs=/tmp:rw,noexec,nosuid,size=50m', // Temporary writable space
-            '-v', `${env.DOCKER_VOLUME_NAME}:/usr/src/app`, // Using volume mount setup as prompted
-            '-w', `/usr/src/app/${executionId}`,
+            '-v', `${hostTempDir}:/sandbox`,
+            '-w', `/sandbox`,
             image,
             ...commandArgs
         ];

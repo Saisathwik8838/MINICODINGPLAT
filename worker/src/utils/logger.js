@@ -1,5 +1,5 @@
 import winston from 'winston';
-import 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { env } from '../config/env.js';
 
 const { combine, timestamp, printf, colorize, json, errors } = winston.format;
@@ -29,7 +29,7 @@ export const logger = winston.createLogger({
                 : jsonFormat
         }),
 
-        new winston.transports.DailyRotateFile({
+        new DailyRotateFile({
             filename: 'logs/worker-error-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             zippedArchive: true,
@@ -38,7 +38,7 @@ export const logger = winston.createLogger({
             level: 'error',
         }),
 
-        new winston.transports.DailyRotateFile({
+        new DailyRotateFile({
             filename: 'logs/worker-combined-%DATE%.log',
             datePattern: 'YYYY-MM-DD',
             zippedArchive: true,

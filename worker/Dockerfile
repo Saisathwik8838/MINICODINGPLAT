@@ -11,6 +11,8 @@ COPY worker/package*.json ./
 COPY backend/prisma ./prisma/
 
 RUN npm install
+
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 RUN npx prisma generate
 
 COPY worker/ .

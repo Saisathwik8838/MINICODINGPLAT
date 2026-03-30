@@ -28,7 +28,6 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 if (nodeEnv === 'production') {
     requireEnvVar('DATABASE_URL', 'Prisma database connection');
     requireEnvVar('REDIS_HOST', 'Redis queue connection');
-    requireEnvVar('JWT_SECRET', 'Session security');
 }
 
 export const env = {
@@ -48,8 +47,7 @@ export const env = {
     QUEUE_NAME: process.env.QUEUE_NAME || 'submission-queue',
     WORKER_CONCURRENCY: Math.max(1, Math.min(20, parseInt(process.env.WORKER_CONCURRENCY || '5', 10))),
     
-    // Docker configuration
-    DOCKER_VOLUME_NAME: process.env.DOCKER_VOLUME_NAME || 'minicodingplat_minileetcode-tmp',
+
 };
 
 console.log(`[ENV] Starting in ${nodeEnv} mode`);

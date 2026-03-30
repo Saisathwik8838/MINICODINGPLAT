@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # ===== PostgreSQL Database =====
@@ -81,7 +80,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -101,7 +100,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       QUEUE_NAME: ${QUEUE_NAME:-submission-queue}
       WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
-      DOCKER_VOLUME_NAME: ${DOCKER_VOLUME_NAME:-minicodingplat_minileetcode-tmp}
+
       SUBMISSION_TIMEOUT_SECONDS: ${SUBMISSION_TIMEOUT_SECONDS:-30}
       MAX_CODE_SIZE_KB: ${MAX_CODE_SIZE_KB:-100}
     volumes:
@@ -145,7 +144,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/nginx-health"]
       interval: 30s
       timeout: 10s
       retries: 3

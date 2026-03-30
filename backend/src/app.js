@@ -56,7 +56,7 @@ app.use(
     })
 );
 
-app.get('/health', (req, res) => {
+app.get('/api/v1/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'API is running', timestamp: new Date() });
 });
 
@@ -70,7 +70,7 @@ app.use('/api/v1/discussions', standaloneDiscussionRoutes); // Global standalone
 app.use('/api/v1/problems/:problemId/discussions', discussionRoutes); // Nested route structure
 
 // Prometheus endpoint
-app.get('/metrics', async (req, res) => {
+app.get('/api/v1/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
     res.end(await client.register.metrics());
 });
