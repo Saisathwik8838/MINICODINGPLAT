@@ -30,7 +30,7 @@ const LANGUAGE_CONFIG = {
         image: 'minileetcode-runner-java:latest',
         extension: '.java',
         compileCommand: (src) => ['javac', src],
-        runCommand: () => ['java', 'Main'],
+        runCommand: () => ['java', '-cp', '/sandbox', 'Main'],
     }
 };
 
@@ -178,7 +178,7 @@ export const runCodeInSandbox = async (
         // COMPILATION (if needed)
         // ============================================
         if (config.compileCommand) {
-            const compileTimeout = Math.min(10, safeTimeLimit);
+            const compileTimeout = Math.min(30, safeTimeLimit + 10);
             logger.debug(`Compiling ${language} code (timeout: ${compileTimeout}s)`);
             
             const compileArgs = config.compileCommand(fileName, 'main.out');
@@ -271,7 +271,6 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
             '--pids-limit=64',                   // Prevent fork bombs
             '--network=none',                    // No network access
             '--security-opt=no-new-privileges', // Prevent privilege escalation
-            '--read-only',                       // Read-only root filesystem
             '--tmpfs=/tmp:rw,noexec,nosuid,size=50m', // Temporary writable space
             '-v', `${hostTempDir}:/sandbox`,
             '-w', `/sandbox`,
