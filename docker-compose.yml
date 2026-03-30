@@ -103,9 +103,10 @@ services:
 
       SUBMISSION_TIMEOUT_SECONDS: ${SUBMISSION_TIMEOUT_SECONDS:-30}
       MAX_CODE_SIZE_KB: ${MAX_CODE_SIZE_KB:-100}
+      HOST_PROJECT_PATH: ${HOST_PROJECT_PATH}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - minileetcode-tmp:/usr/src/app/tmp
+      - ./tmp:/usr/src/app/tmp
       - platform-logs:/usr/src/app/logs
     depends_on:
       postgres:

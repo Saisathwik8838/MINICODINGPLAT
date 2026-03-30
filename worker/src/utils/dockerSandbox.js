@@ -232,12 +232,12 @@ const executeDockerCommand = (image, executionId, commandArgs, stdinData, limits
     return new Promise((resolve) => {
         const startTime = process.hrtime.bigint();
         
-        // On Windows and DinD scenarios, the host daemon might need the host path
-        // We assume the caller (worker) has its /usr/src/app (or CWD) root path passed to it
-        // and we use that for the mount.
-        // For now, we will try to use the absolute path from the host perspective if available,
-        // or rely on a bind mount that matches.
-        const hostTempDir = process.env.HOST_TEMP_DIR || tempDir;
+        // On Windows and DinD scenarios, the host daemon needs the host-absolute path for volume mounts.
+        // If HOST_PROJECT_PATH is provided (from .env/compose), we construct the host-side path 
+        // to our execution temporary directory.
+        const hostTempDir = process.env.HOST_PROJECT_PATH 
+            ? path.join(process.env.HOST_PROJECT_PATH, 'tmp', executionId)
+            : tempDir;
 
         const dockerArgs = [
             'run',

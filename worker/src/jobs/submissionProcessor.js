@@ -239,7 +239,6 @@ export const processSubmission = async (job) => {
             testcasesPassed: passedTestCases,
             totalTestcases: problem.testCases.length,
             errorMessage: errorMessage || null,
-            processedAt: new Date()
         };
         
         const updatedSubmission = await prisma.submission.update({
