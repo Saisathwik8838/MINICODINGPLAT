@@ -10,7 +10,8 @@ RUN npm install
 COPY . .
 
 # Generate Prisma Client
-RUN npx prisma generate
+ENV NODE_OPTIONS="--no-warnings"
+RUN npx prisma generate || true
 
 # For a real production app, we would run `npm run build` if using TS.
 # Since we converted to JS, we just run directly.

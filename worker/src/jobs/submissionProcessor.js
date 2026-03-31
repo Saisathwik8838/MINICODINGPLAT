@@ -25,48 +25,53 @@ const normalizeOutput = (output) => {
 
 /**
  * Processes a single test case execution
- * @returns {Object} {passed, shouldStop, error}
+ * @returns {Object} {passed, shouldStop, status, error, runtime}
  */
-const executeTestCase = async (testcase, code, language, problemTimeLimit, problemMemoryLimit, index, total) => {
+const executeTestCase = async (testcase, code, language, index, total) => {
     logger.debug(`Executing testcase ${index + 1}/${total}`);
     
     try {
-        const { stdout, stderr, runTime } = await runCodeInSandbox(
-            code,
-            language,
-            testcase.input,
-            { timeLimit: problemTimeLimit, memoryLimit: problemMemoryLimit }
-        );
+        const result = await runCodeInSandbox(language, code, testcase.input);
+        const { stdout, stderr, runTime, status } = result;
         
-        // Check for timeout
-        if (stderr === 'Time Limit Exceeded') {
+        // Handle explicit sandbox statuses
+        if (status === 'TIMEOUT') {
             return {
                 passed: false,
                 shouldStop: true,
                 status: 'TIME_LIMIT_EXCEEDED',
-                error: 'Execution exceeded time limit'
+                error: 'Execution exceeded time limit',
+                runtime: runTime
             };
         }
-        
-        // Check for memory limit exceeded
-        if (stderr === 'Memory Limit Exceeded') {
+
+        if (status === 'COMPILATION_ERROR') {
             return {
                 passed: false,
                 shouldStop: true,
-                status: 'MEMORY_LIMIT_EXCEEDED',
-                error: 'Execution exceeded memory limit'
+                status: 'COMPILATION_ERROR',
+                error: stderr.slice(0, ERROR_MESSAGE_MAX_LENGTH),
+                runtime: 0
             };
         }
-        
-        // Check for compilation/runtime errors
-        if (stderr && !stdout) {
-            const isCompilationError = language === 'CPP' || language === 'JAVA';
+
+        if (status === 'RUNTIME_ERROR') {
             return {
                 passed: false,
                 shouldStop: true,
-                status: isCompilationError ? 'COMPILATION_ERROR' : 'RUNTIME_ERROR',
+                status: 'RUNTIME_ERROR',
                 error: stderr.slice(0, ERROR_MESSAGE_MAX_LENGTH),
                 runtime: runTime
+            };
+        }
+
+        if (status === 'INTERNAL_ERROR') {
+            return {
+                passed: false,
+                shouldStop: true,
+                status: 'INTERNAL_ERROR',
+                error: stderr.slice(0, ERROR_MESSAGE_MAX_LENGTH),
+                runtime: 0
             };
         }
         
@@ -88,6 +93,7 @@ const executeTestCase = async (testcase, code, language, problemTimeLimit, probl
         return {
             passed: true,
             shouldStop: false,
+            status: 'ACCEPTED',
             runtime: runTime
         };
         
@@ -96,25 +102,19 @@ const executeTestCase = async (testcase, code, language, problemTimeLimit, probl
         return {
             passed: false,
             shouldStop: true,
-            status: 'RUNTIME_ERROR',
-            error: `Execution engine error: ${err.message}`.slice(0, ERROR_MESSAGE_MAX_LENGTH)
+            status: 'INTERNAL_ERROR',
+            error: `Execution engine crash: ${err.message}`.slice(0, ERROR_MESSAGE_MAX_LENGTH),
+            runtime: 0
         };
     }
 };
 
 /**
  * Updates user's leaderboard score atomically
- * @param {string} userId - User ID
- * @throws {Error} If update fails
  */
 const syncUserLeaderboard = async (userId) => {
-    if (!userId) {
-        logger.warn('syncUserLeaderboard called with null/undefined userId');
-        return;
-    }
-    
+    if (!userId) return;
     try {
-        // Fetch all accepted submissions atomically
         const solvedProblems = await prisma.submission.findMany({
             where: { userId, status: 'ACCEPTED' },
             distinct: ['problemId'],
@@ -122,28 +122,19 @@ const syncUserLeaderboard = async (userId) => {
         });
         
         const totalSolved = solvedProblems.length;
-        const totalScore = totalSolved * 10; // 10 pts per solved problem
+        const totalScore = totalSolved * 10;
         
-        // Update user with transaction to prevent race conditions
         await prisma.user.update({
             where: { id: userId },
-            data: {
-                totalSolved,
-                totalScore
-            }
+            data: { totalSolved, totalScore }
         });
-        
-        logger.debug(`Leaderboard updated for user ${userId}: ${totalSolved} problems solved, ${totalScore} points`);
-        
     } catch (err) {
         logger.error(`Failed to sync leaderboard for user ${userId}: ${err.message}`);
-        // Non-critical error - don't throw
     }
 };
 
 /**
  * Main submission processor
- * @param {Object} job - BullMQ job object
  */
 export const processSubmission = async (job) => {
     const { submissionId, code, language, problemId } = job.data;
@@ -151,9 +142,6 @@ export const processSubmission = async (job) => {
     logger.info(`Processing submission ${submissionId} for problem ${problemId} (language: ${language})`);
     
     try {
-        // ============================================
-        // 1. VALIDATE INPUT
-        // ============================================
         if (!submissionId || !code || !language || !problemId) {
             throw new Error('Missing required submission fields');
         }
@@ -162,17 +150,11 @@ export const processSubmission = async (job) => {
             throw new Error(`Code exceeds maximum allowed size (${MAX_CODE_SIZE} bytes)`);
         }
         
-        // ============================================
-        // 2. MARK AS PROCESSING
-        // ============================================
         await prisma.submission.update({
             where: { id: submissionId },
             data: { status: 'PROCESSING' }
         });
         
-        // ============================================
-        // 3. FETCH PROBLEM & TEST CASES
-        // ============================================
         const problem = await prisma.problem.findUnique({
             where: { id: problemId },
             include: {
@@ -184,21 +166,6 @@ export const processSubmission = async (job) => {
             throw new Error(`Problem ${problemId} not found or has no test cases`);
         }
         
-        // Validate test case ordering
-        for (let i = 0; i < problem.testCases.length; i++) {
-            if (problem.testCases[i].order !== i) {
-                logger.warn(`Test case ordering inconsistent for problem ${problemId}`);
-            }
-        }
-        
-        const limits = {
-            timeLimit: Math.max(1, Math.min(60, problem.timeLimit || 5)), // 1-60 seconds
-            memoryLimit: Math.max(32, Math.min(2048, problem.memoryLimit || 256)) // 32-2048 MB
-        };
-        
-        // ============================================
-        // 4. EXECUTE AGAINST TEST CASES
-        // ============================================
         let passedTestCases = 0;
         let maxRuntime = 0;
         let finalStatus = 'ACCEPTED';
@@ -211,8 +178,6 @@ export const processSubmission = async (job) => {
                 testcase,
                 code,
                 language,
-                limits.timeLimit,
-                limits.memoryLimit,
                 i,
                 problem.testCases.length
             );
@@ -220,8 +185,12 @@ export const processSubmission = async (job) => {
             maxRuntime = Math.max(maxRuntime, result.runtime || 0);
             
             if (result.shouldStop) {
-                finalStatus = result.status || 'RUNTIME_ERROR';
+                finalStatus = result.status;
                 errorMessage = result.error || '';
+                // If it's a structural failure (INTERNAL ERROR), we might want to log more
+                if (finalStatus === 'INTERNAL_ERROR') {
+                    logger.error(`Critical Internal Error during submission ${submissionId}: ${errorMessage}`);
+                }
                 break;
             }
             
@@ -230,20 +199,15 @@ export const processSubmission = async (job) => {
             }
         }
         
-        // ============================================
-        // 5. UPDATE DATABASE
-        // ============================================
-        const updateData = {
-            status: finalStatus,
-            runtime: maxRuntime,
-            testcasesPassed: passedTestCases,
-            totalTestcases: problem.testCases.length,
-            errorMessage: errorMessage || null,
-        };
-        
         const updatedSubmission = await prisma.submission.update({
             where: { id: submissionId },
-            data: updateData
+            data: {
+                status: finalStatus,
+                runtime: maxRuntime,
+                testcasesPassed: passedTestCases,
+                totalTestcases: problem.testCases.length,
+                errorMessage: errorMessage || null,
+            }
         });
         
         logger.info(
@@ -251,9 +215,6 @@ export const processSubmission = async (job) => {
             `(${passedTestCases}/${problem.testCases.length} test cases, ${maxRuntime.toFixed(2)}ms)`
         );
         
-        // ============================================
-        // 6. UPDATE LEADERBOARD IF ACCEPTED
-        // ============================================
         if (finalStatus === 'ACCEPTED' && updatedSubmission.userId) {
             await syncUserLeaderboard(updatedSubmission.userId);
         }
@@ -261,22 +222,15 @@ export const processSubmission = async (job) => {
         return { success: true, status: finalStatus };
         
     } catch (error) {
-        logger.error(
-            `Error processing submission ${submissionId}: ${error.message}`,
-            { stack: error.stack }
-        );
+        logger.error(`Error processing submission ${submissionId}: ${error.message}`);
         
-        try {
-            await prisma.submission.update({
-                where: { id: submissionId },
-                data: {
-                    status: 'INTERNAL_ERROR',
-                    errorMessage: error.message.slice(0, ERROR_MESSAGE_MAX_LENGTH)
-                }
-            });
-        } catch (updateErr) {
-            logger.error(`Failed to update submission status: ${updateErr.message}`);
-        }
+        await prisma.submission.update({
+            where: { id: submissionId },
+            data: {
+                status: 'INTERNAL_ERROR',
+                errorMessage: error.message.slice(0, ERROR_MESSAGE_MAX_LENGTH)
+            }
+        }).catch(e => logger.error(`Retry status update failed: ${e.message}`));
         
         throw error;
     }

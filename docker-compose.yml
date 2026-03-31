@@ -99,11 +99,11 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       QUEUE_NAME: ${QUEUE_NAME:-submission-queue}
-      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-5}
-
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
       SUBMISSION_TIMEOUT_SECONDS: ${SUBMISSION_TIMEOUT_SECONDS:-30}
       MAX_CODE_SIZE_KB: ${MAX_CODE_SIZE_KB:-100}
-      HOST_PROJECT_PATH: ${HOST_PROJECT_PATH}
+      HOST_PROJECT_PATH: /usr/src/app
+      CLEANUP_ENABLED: "false"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./tmp:/usr/src/app/tmp
@@ -190,7 +190,6 @@ volumes:
   prometheus-data:
   grafana-data:
   platform-logs:
-  minileetcode-tmp:
 
 networks:
   app-network:

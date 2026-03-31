@@ -7,14 +7,28 @@ RUN apk add --no-cache openssl
 
 WORKDIR /usr/src/app
 
+# Set environment before packages to ensure Prisma builds for correct target
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+ENV NODE_ENV=production
+
+# Copy package files from both backend and worker
+COPY backend/package*.json ./backend/
 COPY worker/package*.json ./
 COPY backend/prisma ./prisma/
 
-RUN npm install
+# Install dependencies  
+RUN npm install && npm list @prisma/client
 
-ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
-RUN npx prisma generate
+# Verify schema exists
+RUN [ -f ./prisma/schema.prisma ] && echo "✓ Prisma schema found" || (echo "✗ Prisma schema missing!" && exit 1)
 
-COPY worker/ .
+# Generate Prisma Client with error reporting
+RUN npx prisma generate --skip-engine-check 2>&1 | tee /tmp/prisma-gen.log && \
+    [ -d node_modules/.prisma/client ] && echo "✓ Prisma client generated" || \
+    (echo "✗ Prisma generation failed" && cat /tmp/prisma-gen.log && exit 1)
+
+# Copy worker source files
+COPY worker/src ./src/
+COPY worker/.env* ./
 
 CMD ["node", "src/worker.js"]
