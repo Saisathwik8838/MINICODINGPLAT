@@ -5,11 +5,10 @@
 # but this script can be used to set ulimits internal to the container 
 # before executing the actual code as a defense-in-depth measure.
 
-# Set max file size to 1MB to prevent disk exhaustion (if ever mounted writable)
-ulimit -f 1024
-
-# Set max processes (already handled by docker --pids-limit)
-ulimit -u 64
+# Try to set ulimits, but don't fail if unsupported (Alpine sh/busybox)
+# Alpine Linux may not support all ulimit options
+ulimit -f 1024 2>/dev/null || true
+ulimit -u 64 2>/dev/null || true
 
 # Execute the command passed to this script
 exec "$@"
