@@ -315,11 +315,11 @@ export default function CodeEditorPage() {
                                             <Database className="w-4 h-4 text-emerald-400" /> Memory: <span className="text-gray-200 font-mono font-medium">{output.memory ? `${output.memory}MB` : '-'}</span>
                                         </div>
                                     </div>
-                                    {(output.detail || output.stdout || output.error) && (
+                                    {(output.detail || output.errorMessage || output.stdout || output.error) && (
                                         <div>
                                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Details / Output</p>
                                             <pre className="bg-dark-900 p-3 rounded border border-dark-700/50 text-gray-300 font-mono text-sm shadow-inner whitespace-pre-wrap">
-                                                {output.detail || output.error || output.stdout || "No output generated."}
+                                                {output.detail || output.errorMessage || output.error || output.stdout || "No output generated."}
                                             </pre>
                                         </div>
                                     )}

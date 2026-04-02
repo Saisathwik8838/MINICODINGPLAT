@@ -1,86 +1,38 @@
-name: Deploy to Production
+name: Deploy to Azure VM
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch: # Allows manual trigger from GH UI
-
-# Only allow one deployment at a time
-concurrency: 
-  group: production-deployment
-  cancel-in-progress: true
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.set-tag.outputs.TAG }}
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set Image Tag
-      id: set-tag
-      run: echo "TAG=${{ github.sha }}" >> $GITHUB_OUTPUT
-
-    # In a real scenario, you configure Docker Hub or AWS ECR here:
-    # - name: Login to Docker Registry
-    #   uses: docker/login-action@v3
-    #   with:
-    #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
-    # - name: Build and Push Backend
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./backend
-    #     push: true
-    #     tags: myorg/minileetcode-backend:${{ steps.set-tag.outputs.TAG }},myorg/minileetcode-backend:latest
-        
-    # - name: Build and Push Worker
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./worker
-    #     push: true
-    #     tags: myorg/minileetcode-worker:${{ steps.set-tag.outputs.TAG }},myorg/minileetcode-worker:latest
-    
-    # - name: Build and Push Frontend
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./frontend
-    #     push: true
-    #     tags: myorg/minileetcode-frontend:${{ steps.set-tag.outputs.TAG }},myorg/minileetcode-frontend:latest
-
-  deploy-to-server:
-    needs: build-and-push
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
-    # This step securely SSHs into your production Droplet/EC2 instance
-    # Pulls the new docker-compose.yml code, updates the TAG env var, and restarts
-    - name: Execute Remote SSH Deployment
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }} # e.g., 203.0.113.1
-        username: ${{ secrets.SERVER_USER }} # e.g., root or ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /opt/minileetcode
-          
-          # Force pull latest orchestration configs from git
-          git pull origin main
-          
-          # Pull the latest executor runner images for the worker
-          cd executor && bash scripts/build_images.sh && cd ..
-          
-          # Restart the stack with the new images
-          docker compose down
-          
-          # Apply Prisma schema migrations securely
-          docker compose run --rm backend npx prisma migrate deploy
-          
-          # Boot up the fresh instances
-          docker compose up -d
-          
-          # Prune old images to save disk space
-          docker image prune -f
+      - name: Execute Remote SSH Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            # Navigate to the project directory
+            cd /opt/MINICODINGPLAT
+            
+            # Pull the latest code
+            git pull origin main
+            
+            # Build the React frontend
+            cd frontend
+            npm install
+            npm run build
+            cd ..
+            
+            # Rebuild the backend and restart containers without downtime for unchanged services
+            docker compose build --no-cache backend
+            docker compose up -d
+            
+            # Run database migrations securely inside the backend container
+            docker exec minileetcode-backend npx prisma migrate deploy

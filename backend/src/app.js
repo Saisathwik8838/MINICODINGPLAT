@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -14,30 +15,8 @@ import discussionRoutes, { standaloneDiscussionRoutes } from './routes/discussio
 import problemRoutes from './routes/problem.routes.js';
 import submissionRoutes from './routes/submission.routes.js';
 import profileRoutes from './routes/profile.routes.js';
-import client from 'prom-client';
 
 const app = express();
-
-// Initialize Prometheus Metrics
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ register: client.register });
-
-// Custom histogram for API latency
-export const httpRequestDurationMicroseconds = new client.Histogram({
-    name: 'http_request_duration_seconds',
-    help: 'Duration of HTTP requests in seconds',
-    labelNames: ['method', 'route', 'status_code'],
-    buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10]
-});
-
-// Middleware to track latency
-app.use((req, res, next) => {
-    const end = httpRequestDurationMicroseconds.startTimer();
-    res.on('finish', () => {
-        end({ route: req.route ? req.route.path : req.path, status_code: res.statusCode, method: req.method });
-    });
-    next();
-});
 
 app.use(helmet());
 app.use(
@@ -66,18 +45,22 @@ app.use('/api/v1/leaderboard', leaderboardRoutes);
 app.use('/api/v1/problems', problemRoutes);
 app.use('/api/v1/submissions', submissionRoutes);
 app.use('/api/v1/profile', profileRoutes);
-app.use('/api/v1/discussions', standaloneDiscussionRoutes); // Global standalone discussions
-app.use('/api/v1/problems/:problemId/discussions', discussionRoutes); // Nested route structure
+app.use('/api/v1/discussions', standaloneDiscussionRoutes);
+app.use('/api/v1/problems/:problemId/discussions', discussionRoutes);
 
-// Prometheus endpoint
-app.get('/api/v1/metrics', async (req, res) => {
-    res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
-});
-
-app.all('*', (req, res, next) => {
-    res.status(404).json({ message: `Route ${req.originalUrl} not found` });
-});
+if (env.NODE_ENV === 'production') {
+    const __dirname = path.resolve();
+    // Assuming backend is launched from backend/ folder, so frontend is at ../frontend/dist
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
+    });
+} else {
+    app.all('*', (req, res, next) => {
+        res.status(404).json({ message: `Route ${req.originalUrl} not found` });
+    });
+}
 
 app.use(errorHandler);
 

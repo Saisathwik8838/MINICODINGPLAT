@@ -1,5 +1,6 @@
 import { prisma } from '../config/db.js';
 import { AppError } from '../middlewares/errorHandler.js';
+import { normalizeVisibleTestCases } from '../utils/testcaseInput.js';
 
 export const getProblems = async (req, res, next) => {
     try {
@@ -130,7 +131,12 @@ export const getProblemBySlug = async (req, res, next) => {
 
         res.status(200).json({
             status: 'success',
-            data: { problem }
+            data: {
+                problem: {
+                    ...problem,
+                    testCases: normalizeVisibleTestCases(problem.testCases)
+                }
+            }
         });
     } catch (error) {
         next(error);

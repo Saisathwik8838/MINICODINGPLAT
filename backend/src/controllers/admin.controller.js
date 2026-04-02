@@ -1,7 +1,5 @@
 import { prisma } from '../config/db.js';
 import { AppError } from '../middlewares/errorHandler.js';
-import { submissionQueue } from '../config/queue.js';
-
 // ---- Problems Management ----
 
 export const createProblem = async (req, res, next) => {
@@ -123,12 +121,10 @@ export const updateUserRole = async (req, res, next) => {
 
 export const getStats = async (req, res, next) => {
     try {
-        const [totalUsers, totalProblems, totalSubmissions, waiting, active] = await Promise.all([
+        const [totalUsers, totalProblems, totalSubmissions] = await Promise.all([
             prisma.user.count(),
             prisma.problem.count(),
             prisma.submission.count(),
-            submissionQueue.getWaitingCount(),
-            submissionQueue.getActiveCount(),
         ]);
 
         res.status(200).json({
@@ -137,7 +133,7 @@ export const getStats = async (req, res, next) => {
                 totalUsers, 
                 totalProblems, 
                 totalSubmissions, 
-                queueStatus: waiting + active 
+                queueStatus: 0 
             }
         });
     } catch (error) {

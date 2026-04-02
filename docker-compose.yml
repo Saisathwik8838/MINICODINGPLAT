@@ -1,6 +1,4 @@
-
 services:
-  # ===== PostgreSQL Database =====
   postgres:
     image: postgres:15-alpine
     container_name: minileetcode-postgres
@@ -21,32 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===== Redis Queue =====
-  redis:
-    image: redis:7-alpine
-    container_name: minileetcode-redis
-    restart: always
-    ports:
-      - "6379:6379"
-    command: >
-      sh -c 'if [ -z "$REDIS_PASSWORD" ]; then
-        redis-server;
-      else
-        redis-server --requirepass "$REDIS_PASSWORD";
-      fi'
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-    volumes:
-      - redis-data:/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ===== Backend API Server =====
   backend:
     build:
       context: ./backend
@@ -57,26 +29,25 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-5000}
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       JWT_SECRET: ${JWT_SECRET}
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       API_RATE_LIMIT_WINDOW_MS: ${API_RATE_LIMIT_WINDOW_MS:-900000}
       API_RATE_LIMIT_MAX_REQUESTS: ${API_RATE_LIMIT_MAX_REQUESTS:-100}
       MAX_CODE_SIZE_KB: ${MAX_CODE_SIZE_KB:-100}
-      METRICS_SECRET: ${METRICS_SECRET}
-
+      SANDBOX_ASSETS_DIR: /usr/src/app/executor
+      AUTO_BUILD_SANDBOX_IMAGES: "true"
+      HOST_PROJECT_PATH: /usr/src/app
+      CLEANUP_ENABLED: "false"
     ports:
       - "5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     volumes:
-      - platform-logs:/usr/src/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./executor:/usr/src/app/executor:ro
+      - ./tmp:/usr/src/app/tmp
     networks:
       - app-network
     healthcheck:
@@ -85,111 +56,8 @@ services:
       timeout: 10s
       retries: 3
 
-  # ===== Execution Worker =====
-  worker:
-    build:
-      context: .
-      dockerfile: ./worker/Dockerfile
-    container_name: minileetcode-worker
-    restart: always
-    environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-      QUEUE_NAME: ${QUEUE_NAME:-submission-queue}
-      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
-      SUBMISSION_TIMEOUT_SECONDS: ${SUBMISSION_TIMEOUT_SECONDS:-30}
-      MAX_CODE_SIZE_KB: ${MAX_CODE_SIZE_KB:-100}
-      HOST_PROJECT_PATH: /usr/src/app
-      CLEANUP_ENABLED: "false"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./tmp:/usr/src/app/tmp
-      - platform-logs:/usr/src/app/logs
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - app-network
-
-  # ===== React Frontend =====
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: minileetcode-frontend
-    restart: always
-    expose:
-      - "80"
-    depends_on:
-      - backend
-    networks:
-      - app-network
-
-  # ===== Nginx Gateway =====
-  nginx:
-    build:
-      context: ./infrastructure/nginx
-      dockerfile: Dockerfile
-    container_name: minileetcode-gateway
-    restart: always
-    ports:
-      - "80:80"
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/nginx-health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ===== Prometheus =====
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: minileetcode-prometheus
-    restart: always
-    volumes:
-      - ./infrastructure/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    networks:
-      - app-network
-
-  # ===== Grafana =====
-  grafana:
-    image: grafana/grafana:latest
-    container_name: minileetcode-grafana
-    restart: always
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-    volumes:
-      - ./infrastructure/monitoring/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
-      - grafana-data:/var/lib/grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - app-network
-
 volumes:
   postgres-data:
-  redis-data:
-  prometheus-data:
-  grafana-data:
-  platform-logs:
 
 networks:
   app-network:

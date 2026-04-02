@@ -1,6 +1,12 @@
+FROM docker:28-cli AS docker-cli
+
 FROM node:20
 
 WORKDIR /usr/src/app
+
+# Use a modern Docker CLI so it can talk to recent Docker Desktop daemons.
+COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker-cli /usr/local/libexec/docker /usr/local/libexec/docker
 
 COPY package*.json ./
 COPY prisma ./prisma/

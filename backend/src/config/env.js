@@ -25,7 +25,6 @@ const nodeEnv = process.env.NODE_ENV || 'development';
 
 if (nodeEnv === 'production') {
     requireEnvVar('DATABASE_URL', 'Database connection');
-    requireEnvVar('REDIS_HOST', 'Cache/Queue connection');
     requireEnvVar('JWT_SECRET', 'Authentication security');
     requireEnvVar('REFRESH_TOKEN_SECRET', 'Refresh token security');
 }
@@ -44,12 +43,6 @@ export const env = {
     // Database
     DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/minileetcode?schema=public',
     
-    // Redis
-    REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
-    REDIS_PORT: parseInt(process.env.REDIS_PORT || '6379', 10),
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
-    REDIS_DB: parseInt(process.env.REDIS_DB || '0', 10),
-    
     // API Configuration
     FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
     API_RATE_LIMIT_WINDOW_MS: parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '900000', 10),
@@ -57,7 +50,6 @@ export const env = {
     
     // Submission constraints
     MAX_CODE_SIZE_KB: parseInt(process.env.MAX_CODE_SIZE_KB || '100', 10),
-    SUBMISSION_TIMEOUT_SECONDS: parseInt(process.env.SUBMISSION_TIMEOUT_SECONDS || '30', 10),
 
     // Metrics & Monitoring
     METRICS_SECRET: process.env.METRICS_SECRET || '', // Empty = localhost only
