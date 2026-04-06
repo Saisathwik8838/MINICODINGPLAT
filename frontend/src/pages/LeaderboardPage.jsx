@@ -1,7 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Flame, Code2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Flame, Medal, Trophy, Crown, ArrowUpRight } from 'lucide-react';
 import api from '../api/axios.js';
 import useAuthStore from '../store/authStore.js';
+
+const podiumConfig = [
+    {
+        label: '1st Place',
+        icon: <Crown className="h-5 w-5 text-amber-300" />,
+        className: 'from-amber-400/20 via-amber-300/10 to-transparent'
+    },
+    {
+        label: '2nd Place',
+        icon: <Medal className="h-5 w-5 text-slate-200" />,
+        className: 'from-slate-300/14 via-slate-100/6 to-transparent'
+    },
+    {
+        label: '3rd Place',
+        icon: <Medal className="h-5 w-5 text-orange-300" />,
+        className: 'from-orange-400/16 via-orange-300/8 to-transparent'
+    }
+];
 
 export default function LeaderboardPage() {
     const { user } = useAuthStore();
@@ -14,6 +32,7 @@ export default function LeaderboardPage() {
 
     const fetchLeaderboard = async (pageNum) => {
         setLoading(true);
+
         try {
             const { data } = await api.get(`/leaderboard?page=${pageNum}&limit=${limit}`);
             setLeaderboardData(data.data.leaderboard || []);
@@ -31,147 +50,248 @@ export default function LeaderboardPage() {
         fetchLeaderboard(1);
     }, []);
 
-    // Find current user's rank on the current page, if they exist on it
-    const currentUserIndex = user ? leaderboardData.findIndex(u => u.id === user.id) : -1;
-    const myRank = currentUserIndex !== -1 ? (page - 1) * limit + currentUserIndex + 1 : null;
+    const currentUserIndex = user ? leaderboardData.findIndex((entry) => entry.id === user.id) : -1;
+    const visibleRank = currentUserIndex !== -1 ? (page - 1) * limit + currentUserIndex + 1 : null;
+    const topThree = page === 1 ? leaderboardData.slice(0, 3) : [];
 
     return (
-        <div className="flex flex-col h-full w-full bg-dark-900 overflow-y-auto">
-            {/* Leaderboard Header (Hero Section) */}
-            <div className="relative overflow-hidden border-b border-dark-700/50 bg-dark-800/80 shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-primary-500/10 opacity-50 pointer-events-none"></div>
-                <div className="max-w-5xl mx-auto px-6 py-12 relative z-10 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-[0_0_30px_rgba(251,191,36,0.3)] mb-6">
-                        <Trophy className="w-8 h-8 text-white" />
-                    </div>
-                    <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">Global Leaderboard</h1>
-                    <p className="text-gray-400 max-w-lg mx-auto">
-                        Solve problems, earn points, and climb the ranks. Only the most optimal solutions solidify your legacy.
-                    </p>
-                    {user && (
-                        <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dark-700 border border-dark-600 text-sm font-medium">
-                            <span className="text-gray-300">Your Position:</span>
-                            <span className={myRank ? "text-primary-400 font-bold" : "text-gray-500"}>
-                                {myRank ? `Rank #${myRank}` : 'Unranked'}
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
+        <div className="page-shell code-scroll">
+            <div className="ambient-orb ambient-orb-amber right-[5%] top-[40px] h-72 w-72" />
+            <div className="ambient-orb ambient-orb-cyan left-[-60px] top-[280px] h-72 w-72" />
 
-            {/* Leaderboard Content */}
-            <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
-                <div className="glass-panel overflow-hidden border border-dark-700/50 shadow-2xl">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-dark-800/80 text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-dark-700/50">
-                                <th className="p-5 text-center w-24">Rank</th>
-                                <th className="p-5">User</th>
-                                <th className="p-5 text-center">Problems Solved</th>
-                                <th className="p-5 text-right pr-8">Total Score</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-dark-700/50">
-                            {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td className="p-5 text-center"><div className="h-6 w-6 bg-dark-700 mx-auto rounded-full"></div></td>
-                                        <td className="p-5"><div className="flex items-center gap-3"><div className="w-8 h-8 bg-dark-700 rounded-full"></div><div className="h-4 w-24 bg-dark-700 rounded"></div></div></td>
-                                        <td className="p-5 text-center"><div className="h-4 w-8 bg-dark-700 mx-auto rounded"></div></td>
-                                        <td className="p-5 text-right"><div className="h-4 w-12 bg-dark-700 ml-auto rounded"></div></td>
-                                    </tr>
-                                ))
-                            ) : leaderboardData.length === 0 ? (
+            <div className="page-width space-y-6">
+                <section className="hero-panel section-fade">
+                    <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+                        <div className="max-w-3xl">
+                            <span className="kicker mb-4">Global Ranking</span>
+                            <h1 className="text-3xl font-bold text-white md:text-4xl">
+                                Leaderboard with a little more presence.
+                            </h1>
+                            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+                                Follow the strongest performers, compare solved counts, and see where you appear on
+                                the currently loaded page.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <SummaryCard
+                                label="Developers Ranked"
+                                value={totalUsers}
+                                icon={<Trophy className="h-4 w-4 text-amber-300" />}
+                            />
+                            <SummaryCard
+                                label="Visible Page Rank"
+                                value={visibleRank ? `#${visibleRank}` : 'Not on page'}
+                                icon={<ArrowUpRight className="h-4 w-4 text-sky-300" />}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {topThree.length > 0 && (
+                    <section className="grid gap-4 lg:grid-cols-3">
+                        {topThree.map((entry, index) => (
+                            <div
+                                key={entry.id}
+                                className={`surface-card section-fade relative overflow-hidden p-6 ${
+                                    index === 0 ? 'lg:-translate-y-2' : ''
+                                }`}
+                            >
+                                <div
+                                    className={`absolute inset-0 bg-gradient-to-br ${podiumConfig[index].className}`}
+                                />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                                            {podiumConfig[index].icon}
+                                            {podiumConfig[index].label}
+                                        </span>
+                                        <span className="font-mono text-xs text-slate-500">
+                                            Rank #{index + 1}
+                                        </span>
+                                    </div>
+
+                                    <h2 className="mt-6 text-2xl font-bold text-white">{entry.username}</h2>
+                                    <p className="mt-2 text-sm text-slate-400">
+                                        {entry.totalSolved} solved problems and {entry.totalScore} score.
+                                    </p>
+
+                                    <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-amber-300">
+                                        <Flame className="h-4 w-4" />
+                                        Momentum stays high at the top.
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </section>
+                )}
+
+                <section className="table-shell section-fade overflow-hidden">
+                    <div className="flex flex-col gap-3 border-b border-white/10 bg-white/[0.03] p-6 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                Rank Table
+                            </p>
+                            <h2 className="mt-2 text-xl font-bold text-white">Performance overview</h2>
+                        </div>
+                        <p className="text-sm text-slate-400">
+                            Ordered by total score and problem-solving consistency.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="border-b border-white/10 text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-16 text-center text-gray-500">
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <div className="p-4 rounded-full bg-dark-800 text-gray-600"><Trophy className="w-8 h-8" /></div>
-                                            <p className="text-sm">No users have solved any problems yet.</p>
-                                        </div>
-                                    </td>
+                                    <th className="p-5 text-center">Rank</th>
+                                    <th className="p-5">User</th>
+                                    <th className="p-5 text-center">Solved</th>
+                                    <th className="p-5 text-right">Score</th>
                                 </tr>
-                            ) : (
-                                leaderboardData.map((u, idx) => {
-                                    const rank = (page - 1) * limit + idx + 1;
-                                    const isCurrentUser = user && user.id === u.id;
-                                    
-                                    return (
-                                        <tr
-                                            key={u.id}
-                                            className={`transition-colors group ${isCurrentUser
-                                                    ? 'bg-primary-500/5 hover:bg-primary-500/10'
-                                                    : 'hover:bg-dark-800/40'
-                                                }`}
-                                        >
-                                            <td className="p-5 text-center">
-                                                {rank === 1 ? (
-                                                    <div className="flex justify-center"><Medal className="w-6 h-6 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" /></div>
-                                                ) : rank === 2 ? (
-                                                    <div className="flex justify-center"><Medal className="w-6 h-6 text-gray-300 drop-shadow-[0_0_8px_rgba(209,213,219,0.5)]" /></div>
-                                                ) : rank === 3 ? (
-                                                    <div className="flex justify-center"><Medal className="w-6 h-6 text-amber-600 drop-shadow-[0_0_8px_rgba(217,119,6,0.5)]" /></div>
-                                                ) : (
-                                                    <span className="font-mono text-gray-500 font-medium text-lg">{rank}</span>
-                                                )}
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-sm">
+                                {loading ? (
+                                    Array.from({ length: 8 }).map((_, index) => (
+                                        <tr key={index} className="animate-pulse">
+                                            <td className="p-5">
+                                                <div className="mx-auto h-6 w-6 rounded-full bg-dark-700" />
                                             </td>
                                             <td className="p-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border ${isCurrentUser ? 'bg-primary-600 text-white border-primary-500' : 'bg-dark-700 text-gray-300 border-dark-600'
-                                                        }`}>
-                                                        {u.username.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span className={`font-semibold ${isCurrentUser ? 'text-primary-400' : 'text-gray-200'} group-hover:text-white transition-colors`}>
-                                                        {u.username}
-                                                    </span>
-                                                    {isCurrentUser && (
-                                                        <span className="px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400 text-[10px] font-bold uppercase tracking-wider border border-primary-500/30">
-                                                            You
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                <div className="h-5 w-40 rounded-full bg-dark-700" />
                                             </td>
-                                            <td className="p-5 text-center">
-                                                <span className="font-mono text-gray-300">{u.totalSolved}</span>
+                                            <td className="p-5">
+                                                <div className="mx-auto h-5 w-10 rounded-full bg-dark-700" />
                                             </td>
-                                            <td className="p-5 text-right pr-8">
-                                                <div className="flex items-center justify-end gap-1.5">
-                                                    <span className="font-mono font-bold text-lg text-amber-400">{u.totalScore}</span>
-                                                    <Flame className="w-4 h-4 text-orange-500" />
-                                                </div>
+                                            <td className="p-5">
+                                                <div className="ml-auto h-5 w-12 rounded-full bg-dark-700" />
                                             </td>
                                         </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
+                                    ))
+                                ) : leaderboardData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="4" className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="metric-icon h-14 w-14 bg-white/5">
+                                                    <Trophy className="h-6 w-6 text-slate-400" />
+                                                </div>
+                                                <h3 className="text-lg font-semibold text-white">
+                                                    No ranked users yet
+                                                </h3>
+                                                <p className="max-w-md text-sm leading-6 text-slate-400">
+                                                    Leaderboard entries will appear after submissions start coming in.
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    leaderboardData.map((entry, index) => {
+                                        const rank = (page - 1) * limit + index + 1;
+                                        const isCurrentUser = user && user.id === entry.id;
 
-                    {/* Pagination Footer */}
-                    <div className="bg-dark-800/50 border-t border-dark-700/50 px-6 py-4 flex items-center justify-between">
-                        <span className="text-sm text-gray-400">
-                            Showing <strong className="text-gray-200">{leaderboardData.length}</strong> of <strong className="text-gray-200">{totalUsers}</strong> developers
+                                        return (
+                                            <tr
+                                                key={entry.id}
+                                                className={`transition-colors hover:bg-white/[0.03] ${
+                                                    isCurrentUser ? 'bg-sky-400/[0.05]' : ''
+                                                }`}
+                                            >
+                                                <td className="p-5 text-center">
+                                                    {rank <= 3 ? (
+                                                        <Medal
+                                                            className={`mx-auto h-5 w-5 ${
+                                                                rank === 1
+                                                                    ? 'text-amber-300'
+                                                                    : rank === 2
+                                                                        ? 'text-slate-200'
+                                                                        : 'text-orange-300'
+                                                            }`}
+                                                        />
+                                                    ) : (
+                                                        <span className="font-mono text-slate-500">#{rank}</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div
+                                                            className={`flex h-10 w-10 items-center justify-center rounded-2xl border text-sm font-bold uppercase ${
+                                                                isCurrentUser
+                                                                    ? 'border-sky-300/30 bg-sky-400/15 text-sky-200'
+                                                                    : 'border-white/10 bg-white/5 text-slate-200'
+                                                            }`}
+                                                        >
+                                                            {entry.username.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p
+                                                                className={`font-semibold ${
+                                                                    isCurrentUser
+                                                                        ? 'text-sky-200'
+                                                                        : 'text-slate-100'
+                                                                }`}
+                                                            >
+                                                                {entry.username}
+                                                            </p>
+                                                            {isCurrentUser && (
+                                                                <p className="text-xs uppercase tracking-[0.18em] text-sky-300">
+                                                                    You
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-5 text-center font-mono text-slate-300">
+                                                    {entry.totalSolved}
+                                                </td>
+                                                <td className="p-5 text-right">
+                                                    <div className="inline-flex items-center gap-2 font-mono font-semibold text-amber-300">
+                                                        <span>{entry.totalScore}</span>
+                                                        <Flame className="h-4 w-4" />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="flex flex-col gap-3 border-t border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-sm text-slate-400">
+                            Showing page {page} of {totalPages} with {leaderboardData.length} visible developers.
                         </span>
+
                         {totalPages > 1 && (
                             <div className="flex gap-2">
-                                <button 
+                                <button
                                     disabled={page === 1}
                                     onClick={() => fetchLeaderboard(page - 1)}
-                                    className="px-3 py-1.5 rounded-md bg-dark-700 hover:bg-dark-600 text-gray-200 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="secondary-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Previous
                                 </button>
-                                <button 
+                                <button
                                     disabled={page === totalPages}
                                     onClick={() => fetchLeaderboard(page + 1)}
-                                    className="px-3 py-1.5 rounded-md bg-dark-700 hover:bg-dark-600 text-gray-200 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="secondary-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Next
                                 </button>
                             </div>
                         )}
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     );
 }
+
+const SummaryCard = ({ label, value, icon }) => (
+    <div className="surface-card min-w-[190px] p-4">
+        <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{label}</p>
+            {icon}
+        </div>
+        <p className="mt-4 text-xl font-bold text-white">{value}</p>
+    </div>
+);

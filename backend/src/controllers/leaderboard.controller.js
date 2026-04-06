@@ -5,11 +5,13 @@ export const getLeaderboard = async (req, res, next) => {
         const limit = parseInt(req.query.limit) || 100;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
+        const where = { role: { not: 'ADMIN' } };
 
         // Fetch users sorted by total score descending, then by total solved, then by creation date ascending
         const leaderboard = await prisma.user.findMany({
             take: limit,
             skip: skip,
+            where,
             orderBy: [
                 { totalScore: 'desc' },
                 { totalSolved: 'desc' },
@@ -23,7 +25,7 @@ export const getLeaderboard = async (req, res, next) => {
             }
         });
 
-        const totalUsers = await prisma.user.count();
+        const totalUsers = await prisma.user.count({ where });
 
         res.status(200).json({
             status: 'success',

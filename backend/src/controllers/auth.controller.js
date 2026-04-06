@@ -7,6 +7,7 @@ const setCookie = (res, name, value, maxAge) => {
         httpOnly: true,
         secure: env.NODE_ENV === 'production',
         sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/api/v1/auth',
         maxAge,
     });
 };
@@ -75,9 +76,11 @@ export const refresh = async (req, res, next) => {
 };
 
 export const logout = (req, res) => {
-    res.cookie('refreshToken', 'loggedout', {
-        expires: new Date(Date.now() + 10 * 1000),
+    res.clearCookie('refreshToken', {
         httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/api/v1/auth',
     });
 
     res.status(200).json({ status: 'success' });

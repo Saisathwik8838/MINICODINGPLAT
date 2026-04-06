@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, ThumbsUp, Clock, Code2, Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Clock, Code2, MessageSquare, Plus, ThumbsUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios.js';
 import useAuthStore from '../store/authStore.js';
+
+const sortOptions = [
+    { id: 'top', label: 'Top' },
+    { id: 'recent', label: 'Recent' }
+];
 
 export default function DiscussionPage() {
     const { user } = useAuthStore();
@@ -12,14 +17,13 @@ export default function DiscussionPage() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showForm, setShowForm] = useState(false);
-    
-    // Form state
     const [problems, setProblems] = useState([]);
     const [formData, setFormData] = useState({ title: '', content: '', problemId: '' });
     const [submitting, setSubmitting] = useState(false);
 
     const fetchDiscussions = async (pageNum, sortType) => {
         setLoading(true);
+
         try {
             const { data } = await api.get(`/discussions?page=${pageNum}&limit=10&sort=${sortType}`);
             setDiscussions(data.data.discussions || []);
@@ -50,13 +54,16 @@ export default function DiscussionPage() {
         if (!showForm && problems.length === 0) {
             fetchProblems();
         }
+
         setShowForm(!showForm);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.title || !formData.content || !formData.problemId) return;
+
         setSubmitting(true);
+
         try {
             await api.post(`/problems/${formData.problemId}/discussions`, {
                 title: formData.title,
@@ -73,147 +80,289 @@ export default function DiscussionPage() {
     };
 
     const handleUpvote = async (discussionId, problemId) => {
-        if (!user) return alert('Please login to upvote');
+        if (!user) {
+            alert('Please login to upvote');
+            return;
+        }
+
         try {
             await api.post(`/problems/${problemId}/discussions/${discussionId}/upvote`);
-            // Optimistically update
-            setDiscussions(discussions.map(d => d.id === discussionId ? { ...d, upvotes: d.upvotes + 1 } : d));
+            setDiscussions(
+                discussions.map((discussion) =>
+                    discussion.id === discussionId
+                        ? { ...discussion, upvotes: discussion.upvotes + 1 }
+                        : discussion
+                )
+            );
         } catch (error) {
             console.error('Upvote failed', error);
         }
     };
 
     return (
-        <div className="flex h-full w-full bg-dark-900 overflow-hidden relative">
-            <div className="flex-1 overflow-y-auto px-6 py-6 md:px-12 max-w-5xl mx-auto code-scroll">
+        <div className="page-shell code-scroll">
+            <div className="ambient-orb ambient-orb-cyan right-[5%] top-[40px] h-72 w-72" />
+            <div className="ambient-orb ambient-orb-amber left-[-80px] top-[260px] h-80 w-80" />
 
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                            <MessageSquare className="w-8 h-8 text-primary-500" />
-                            Global Discussions
-                        </h1>
-                        <p className="text-gray-400">Share your solutions, ask for help, or read top approaches across all problems.</p>
+            <div className="page-width max-w-5xl space-y-6">
+                <section className="hero-panel section-fade">
+                    <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+                        <div className="max-w-3xl">
+                            <span className="kicker mb-4">Community</span>
+                            <h1 className="flex items-center gap-3 text-3xl font-bold text-white md:text-4xl">
+                                <MessageSquare className="h-8 w-8 text-sky-300" />
+                                Discussions that feel part of the product.
+                            </h1>
+                            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+                                Ask questions, share solution ideas, and browse the most useful threads without
+                                changing any of the existing discussion logic.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3">
+                            <div className="surface-card min-w-[170px] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                    Current Sort
+                                </p>
+                                <p className="mt-3 text-xl font-bold text-white capitalize">{sort}</p>
+                            </div>
+                            <div className="surface-card min-w-[170px] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                    Visible Threads
+                                </p>
+                                <p className="mt-3 text-xl font-bold text-white">{discussions.length}</p>
+                            </div>
+                        </div>
                     </div>
-                    {user && (
-                        <button onClick={handleCreateClick} className="px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors shadow-lg shadow-primary-500/20 flex items-center gap-2">
-                            <Plus className="w-4 h-4"/> New Topic
-                        </button>
-                    )}
-                </div>
 
-                {/* Compose Form */}
+                    {user && (
+                        <div className="mt-6">
+                            <button onClick={handleCreateClick} className="primary-button">
+                                <Plus className="h-4 w-4" />
+                                {showForm ? 'Close composer' : 'Start a topic'}
+                            </button>
+                        </div>
+                    )}
+                </section>
+
                 {showForm && user && (
-                    <form onSubmit={handleSubmit} className="mb-8 p-6 glass-panel border-l-4 border-l-primary-500 animate-in fade-in slide-in-from-top-4">
-                        <h3 className="text-lg font-bold text-white mb-4">Start a new discussion</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Select Problem</label>
-                                <select required value={formData.problemId} onChange={e => setFormData({...formData, problemId: e.target.value})} className="w-full bg-dark-800 border border-dark-600 rounded p-2 text-white text-sm">
-                                    <option value="" disabled>-- Choose a problem --</option>
-                                    {problems.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                    <section className="glass-panel section-fade p-6 md:p-8">
+                        <div className="mb-6">
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                New Discussion
+                            </p>
+                            <h2 className="mt-2 text-2xl font-bold text-white">Start a new thread</h2>
+                            <p className="mt-2 text-sm leading-6 text-slate-400">
+                                Keep the title clear, mention the problem, and share enough context for others to help.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                    Problem
+                                </span>
+                                <select
+                                    required
+                                    value={formData.problemId}
+                                    onChange={(e) => setFormData({ ...formData, problemId: e.target.value })}
+                                    className="soft-input"
+                                >
+                                    <option value="" disabled>
+                                        Choose a problem
+                                    </option>
+                                    {problems.map((problem) => (
+                                        <option key={problem.id} value={problem.id}>
+                                            {problem.title}
+                                        </option>
+                                    ))}
                                 </select>
+                            </label>
+
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                    Title
+                                </span>
+                                <input
+                                    required
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    className="soft-input"
+                                    placeholder="O(n) approach with explanation"
+                                />
+                            </label>
+
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                    Content
+                                </span>
+                                <textarea
+                                    required
+                                    rows={6}
+                                    value={formData.content}
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                    className="soft-input font-mono"
+                                    placeholder="Explain your approach or ask your question here."
+                                />
+                            </label>
+
+                            <div className="flex flex-wrap justify-end gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForm(false)}
+                                    className="secondary-button"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="primary-button disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {submitting ? 'Posting...' : 'Post discussion'}
+                                </button>
                             </div>
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Title</label>
-                                <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full bg-dark-800 border border-dark-600 rounded p-2 text-white text-sm" placeholder="e.g. O(n) Runtime Solution Explained" />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-gray-400 mb-1">Content</label>
-                                <textarea required value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} rows={5} className="w-full bg-dark-800 border border-dark-600 rounded p-2 text-white text-sm font-mono" placeholder="Write your approach or question here..." />
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-3 mt-4">
-                            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors">Cancel</button>
-                            <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded text-sm font-medium disabled:opacity-50">Post Discussion</button>
-                        </div>
-                    </form>
+                        </form>
+                    </section>
                 )}
 
-                {/* Filters/Sorting */}
-                <div className="flex items-center gap-4 mb-6 border-b border-dark-700 pb-4">
-                    <div className="flex gap-2">
-                        <button onClick={() => fetchDiscussions(1, 'top')} className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${sort === 'top' ? 'bg-dark-700 text-white border border-dark-600' : 'text-gray-400 hover:bg-dark-800'}`}>Top</button>
-                        <button onClick={() => fetchDiscussions(1, 'recent')} className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${sort === 'recent' ? 'bg-dark-700 text-white border border-dark-600' : 'text-gray-400 hover:bg-dark-800'}`}>Recent</button>
+                <section className="glass-panel section-fade p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {sortOptions.map((option) => (
+                            <button
+                                key={option.id}
+                                onClick={() => fetchDiscussions(1, option.id)}
+                                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                                    sort === option.id
+                                        ? 'bg-sky-400/15 text-white shadow-[inset_0_0_0_1px_rgba(125,211,252,0.28)]'
+                                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                }`}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
                     </div>
-                </div>
+                </section>
 
-                {/* Discussion List */}
-                <div className="space-y-4">
+                <section className="space-y-4">
                     {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="glass-panel p-5 animate-pulse">
-                                <div className="flex gap-5">
-                                    <div className="w-12 h-16 bg-dark-700 rounded-lg shrink-0"></div>
+                        Array.from({ length: 4 }).map((_, index) => (
+                            <div key={index} className="surface-card animate-pulse p-5">
+                                <div className="flex gap-4">
+                                    <div className="h-20 w-16 rounded-2xl bg-dark-700" />
                                     <div className="flex-1 space-y-3">
-                                        <div className="h-5 bg-dark-700 w-3/4 rounded"></div>
-                                        <div className="h-4 bg-dark-700 w-1/4 rounded"></div>
-                                        <div className="h-4 bg-dark-800 w-full rounded mt-4"></div>
+                                        <div className="h-5 w-2/3 rounded-full bg-dark-700" />
+                                        <div className="h-4 w-1/3 rounded-full bg-dark-700" />
+                                        <div className="h-4 w-full rounded-full bg-dark-800" />
                                     </div>
                                 </div>
                             </div>
                         ))
                     ) : discussions.length === 0 ? (
-                        <div className="text-center py-12 glass-panel">
-                            <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                            <p className="text-gray-400">No discussions found.</p>
+                        <div className="glass-panel section-fade px-6 py-16 text-center">
+                            <div className="metric-icon mx-auto h-14 w-14 bg-white/5">
+                                <MessageSquare className="h-6 w-6 text-slate-400" />
+                            </div>
+                            <h3 className="mt-4 text-lg font-semibold text-white">No discussions yet</h3>
+                            <p className="mt-2 text-sm leading-6 text-slate-400">
+                                When threads are created, they will show up here with vote counts and problem context.
+                            </p>
                         </div>
                     ) : (
-                        discussions.map((d) => (
-                            <div key={d.id} className="glass-panel p-5 transition-transform hover:-translate-y-0.5 group border border-dark-700/50 hover:border-dark-600">
-                                <div className="flex gap-5">
-                                    {/* Vote Counter */}
-                                    <div className="flex flex-col items-center gap-1 shrink-0 bg-dark-800/80 px-3 py-2 rounded-lg border border-dark-700/50 h-fit">
-                                        <button onClick={() => handleUpvote(d.id, d.problemId)} className="text-gray-500 hover:text-primary-400 transition-colors">
-                                            <ThumbsUp className="w-4 h-4" />
-                                        </button>
-                                        <span className="font-semibold text-gray-300">{d.upvotes}</span>
-                                    </div>
+                        discussions.map((discussion) => {
+                            const preview = discussion.contentPreview || discussion.content || '';
 
-                                    {/* Content block */}
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-bold text-gray-200 group-hover:text-primary-400 transition-colors mb-2">
-                                            {d.title}
-                                        </h3>
-
-                                        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                                            {d.contentPreview}...
-                                        </p>
-
-                                        <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-gray-500 mb-3">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white bg-dark-600 font-bold uppercase">
-                                                    {d.author.charAt(0)}
-                                                </div>
-                                                <span className="text-gray-300">{d.author}</span>
+                            return (
+                                <article key={discussion.id} className="surface-card card-hover section-fade p-5 md:p-6">
+                                    <div className="flex flex-col gap-5 md:flex-row">
+                                        <div className="flex shrink-0 flex-row items-center gap-3 md:flex-col md:items-center">
+                                            <button
+                                                onClick={() => handleUpvote(discussion.id, discussion.problemId)}
+                                                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-400 transition-colors hover:text-sky-300"
+                                            >
+                                                <ThumbsUp className="h-4 w-4" />
+                                            </button>
+                                            <div className="text-center">
+                                                <p className="font-mono text-lg font-semibold text-white">
+                                                    {discussion.upvotes}
+                                                </p>
+                                                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                                                    Votes
+                                                </p>
                                             </div>
-                                            <Link to={`/problems/${d.problem?.slug}`} className="flex items-center gap-1 hover:text-primary-400 transition-colors text-primary-500/80">
-                                                <Code2 className="w-3.5 h-3.5" />
-                                                {d.problem?.title}
-                                            </Link>
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                {new Date(d.createdAt).toLocaleDateString()}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <MessageSquare className="w-3.5 h-3.5" />
-                                                {d.commentCount} comments
-                                            </span>
+                                        </div>
+
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <h3 className="text-xl font-bold text-white">{discussion.title}</h3>
+                                                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                                    {discussion.commentCount} comments
+                                                </span>
+                                            </div>
+
+                                            <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-400">
+                                                {preview}
+                                                {preview && !preview.endsWith('...') ? '...' : ''}
+                                            </p>
+
+                                            <div className="mt-5 flex flex-wrap items-center gap-4 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                                <span className="inline-flex items-center gap-2">
+                                                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[11px] text-slate-200">
+                                                        {discussion.author.charAt(0)}
+                                                    </span>
+                                                    {discussion.author}
+                                                </span>
+
+                                                {discussion.problem?.slug ? (
+                                                    <Link
+                                                        to={`/problems/${discussion.problem.slug}`}
+                                                        className="inline-flex items-center gap-2 text-sky-300 transition-colors hover:text-sky-200"
+                                                    >
+                                                        <Code2 className="h-3.5 w-3.5" />
+                                                        {discussion.problem.title}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-2 text-slate-400">
+                                                        <Code2 className="h-3.5 w-3.5" />
+                                                        Problem unavailable
+                                                    </span>
+                                                )}
+
+                                                <span className="inline-flex items-center gap-2">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    {new Date(discussion.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))
+                                </article>
+                            );
+                        })
                     )}
-                </div>
+                </section>
 
-                {/* Pagination */}
                 {!loading && totalPages > 1 && (
-                    <div className="flex justify-center mt-8 gap-2">
-                        <button disabled={page === 1} onClick={() => fetchDiscussions(page - 1, sort)} className="px-4 py-2 rounded bg-dark-800 text-gray-300 hover:bg-dark-700 disabled:opacity-50 text-sm">Previous</button>
-                        <span className="px-4 py-2 text-sm text-gray-400">Page {page} of {totalPages}</span>
-                        <button disabled={page === totalPages} onClick={() => fetchDiscussions(page + 1, sort)} className="px-4 py-2 rounded bg-dark-800 text-gray-300 hover:bg-dark-700 disabled:opacity-50 text-sm">Next</button>
+                    <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+                        <span className="text-sm text-slate-400">
+                            Page {page} of {totalPages}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => fetchDiscussions(page - 1, sort)}
+                                className="secondary-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => fetchDiscussions(page + 1, sort)}
+                                className="secondary-button px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

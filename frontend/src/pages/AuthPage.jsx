@@ -40,93 +40,162 @@ const AuthPage = () => {
     };
 
     return (
-        <div className="flex-1 flex items-center justify-center p-6 bg-dark-900 relative overflow-hidden">
-            {/* Background elements for flair */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="page-shell overflow-hidden">
+            <div className="ambient-orb ambient-orb-cyan left-[-120px] top-[80px] h-72 w-72" />
+            <div className="ambient-orb ambient-orb-amber bottom-[-40px] right-[8%] h-80 w-80" />
 
-            <div className="w-full max-w-md glass-panel p-8 z-10 transition-all">
-                <div className="text-center mb-10">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 shadow-xl">
-                        <Lock className="text-white w-6 h-6" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                        {isLogin ? 'Welcome Back' : 'Join MiniLeetCode'}
-                    </h1>
-                    <p className="text-gray-400 text-sm">
-                        {isLogin ? 'Sign in to access your platform benchmarks' : 'Join a world of high-performance code execution'}
-                    </p>
-                </div>
-
-                {message && (
-                    <div className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20 flex items-center gap-3 text-error text-sm animate-in fade-in slide-in-from-top-1">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        <span>{message}</span>
-                    </div>
-                )}
-
-                {success && (
-                    <div className="mb-6 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3 text-green-400 text-sm">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        <span>Authentication successful! Redirecting...</span>
-                    </div>
-                )}
-
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                    {!isLogin && (
-                        <div className="relative group">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-primary-400 transition-colors" />
-                            <input
-                                required
-                                type="text"
-                                placeholder="Username"
-                                value={formData.username}
-                                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                className="w-full bg-dark-700/50 border border-dark-600 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary-400 focus:border-transparent transition-all"
-                            />
+            <div className="page-width flex min-h-full items-center justify-center">
+                <div className="grid w-full max-w-6xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <section className="hero-panel section-fade hidden lg:flex lg:min-h-[620px] lg:flex-col lg:justify-between">
+                        <div className="space-y-6">
+                            <span className="kicker">Practice Platform</span>
+                            <div className="space-y-4">
+                                <h1 className="text-4xl font-bold text-white xl:text-5xl">
+                                    A calmer place to write code, test ideas, and ship better solutions.
+                                </h1>
+                                <p className="max-w-xl text-base leading-7 text-slate-300">
+                                    Keep your flow state. Browse problems, iterate in the editor, and track progress
+                                    with a workspace that feels more like a modern product and less like a raw admin
+                                    panel.
+                                </p>
+                            </div>
                         </div>
-                    )}
 
-                    <div className="relative group">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-primary-400 transition-colors" />
-                        <input
-                            required
-                            type="email"
-                            placeholder="Email address"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full bg-dark-700/50 border border-dark-600 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary-400 focus:border-transparent transition-all"
-                        />
-                    </div>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="surface-card p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                    Sandbox
+                                </p>
+                                <p className="mt-3 text-lg font-semibold text-white">Fast code execution</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-400">
+                                    Run Python, Node, C++, and Java without leaving the page.
+                                </p>
+                            </div>
+                            <div className="surface-card p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                    Progress
+                                </p>
+                                <p className="mt-3 text-lg font-semibold text-white">Clear milestones</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-400">
+                                    Review solved counts, acceptance rate, and recent submissions in one place.
+                                </p>
+                            </div>
+                            <div className="surface-card p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                                    Community
+                                </p>
+                                <p className="mt-3 text-lg font-semibold text-white">Discuss approaches</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-400">
+                                    Compare solutions, learn patterns, and build consistency over time.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div className="relative group">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-primary-400 transition-colors" />
-                        <input
-                            required
-                            type="password"
-                            placeholder="Password"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="w-full bg-dark-700/50 border border-dark-600 rounded-lg py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:ring-1 focus:ring-primary-400 focus:border-transparent transition-all"
-                        />
-                    </div>
+                    <section className="glass-panel section-fade mx-auto w-full max-w-xl p-6 md:p-8">
+                        <div className="mb-8 space-y-4">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-700 shadow-[0_18px_38px_rgba(37,99,235,0.35)]">
+                                <Lock className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <p className="kicker mb-3">{isLogin ? 'Welcome back' : 'Create your account'}</p>
+                                <h1 className="text-3xl font-bold text-white">
+                                    {isLogin ? 'Sign in to continue building momentum.' : 'Start your coding practice space.'}
+                                </h1>
+                                <p className="mt-3 text-sm leading-6 text-slate-400">
+                                    {isLogin
+                                        ? 'Pick up right where you left off with your saved drafts and recent runs.'
+                                        : 'Register once and keep your submissions, stats, and solved history in one place.'}
+                                </p>
+                            </div>
+                        </div>
 
-                    <button
-                        disabled={loading}
-                        type="submit"
-                        className="w-full py-2.5 rounded-lg bg-gradient-to-r from-primary-500 to-indigo-600 hover:from-primary-400 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-primary-500/20 transition-all flex items-center justify-center disabled:opacity-50"
-                    >
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Sign In' : 'Create Account')}
-                    </button>
-                </form>
+                        {message && (
+                            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-error/20 bg-error/10 px-4 py-3 text-sm text-error">
+                                <AlertCircle className="h-4 w-4 shrink-0" />
+                                <span>{message}</span>
+                            </div>
+                        )}
 
-                <div className="mt-8 text-center">
-                    <button
-                        onClick={() => setIsLogin(!isLogin)}
-                        className="text-gray-400 hover:text-white text-xs transition-colors underline decoration-primary-500/30 underline-offset-4"
-                    >
-                        {isLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
-                    </button>
+                        {success && (
+                            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400">
+                                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                                <span>Authentication successful! Redirecting...</span>
+                            </div>
+                        )}
+
+                        <form className="space-y-4" onSubmit={handleSubmit}>
+                            {!isLogin && (
+                                <label className="block">
+                                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                        Username
+                                    </span>
+                                    <div className="relative">
+                                        <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="Choose a username"
+                                            value={formData.username}
+                                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                                            className="soft-input pl-11"
+                                        />
+                                    </div>
+                                </label>
+                            )}
+
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                    Email
+                                </span>
+                                <div className="relative">
+                                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                    <input
+                                        required
+                                        type="email"
+                                        placeholder="you@example.com"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="soft-input pl-11"
+                                    />
+                                </div>
+                            </label>
+
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                    Password
+                                </span>
+                                <div className="relative">
+                                    <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                                    <input
+                                        required
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                        className="soft-input pl-11"
+                                    />
+                                </div>
+                            </label>
+
+                            <button
+                                disabled={loading}
+                                type="submit"
+                                className="primary-button mt-2 w-full justify-center py-3 disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isLogin ? 'Sign In' : 'Create Account')}
+                            </button>
+                        </form>
+
+                        <div className="mt-8 border-t border-white/10 pt-6 text-center">
+                            <button
+                                onClick={() => setIsLogin(!isLogin)}
+                                className="text-sm font-medium text-slate-400 transition-colors hover:text-white"
+                            >
+                                {isLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
+                            </button>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Users, Code2, Activity, PlaySquare, Plus, Trash2, Edit2, ShieldAlert, CheckCircle2, AlertCircle, RefreshCw, BarChart2, Wand2 } from 'lucide-react';
 import api from '../api/axios.js';
+import useAuthStore from '../store/authStore.js';
 
 const AdminPage = () => {
+    const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('overview');
     const [toast, setToast] = useState(null); // { message, type: 'success' | 'error' }
 
@@ -14,13 +16,26 @@ const AdminPage = () => {
     return (
         <div className="flex-1 flex flex-col overflow-hidden bg-dark-900">
             {/* Header */}
-            <header className="px-8 py-6 border-b border-dark-700 bg-dark-800/50 backdrop-blur shrink-0 flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                        <ShieldAlert className="w-6 h-6 text-purple-500" />
-                        Admin Dashboard
-                    </h1>
-                    <p className="text-gray-400 text-sm">Manage platform content, users, and infrastructure</p>
+            <header className="shrink-0 border-b border-dark-700 bg-dark-800/50 px-8 py-6 backdrop-blur">
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100">
+                            <ShieldAlert className="h-3.5 w-3.5 text-sky-300" />
+                            Admin Only
+                        </div>
+                        <h1 className="mb-2 flex items-center gap-3 text-2xl font-bold text-white">
+                            <ShieldAlert className="h-6 w-6 text-sky-300" />
+                            Control the platform without mixing it with the solver flow.
+                        </h1>
+                        <p className="max-w-2xl text-sm text-gray-400">
+                            This workspace is for content, users, submissions, and imports. Regular users stay in the
+                            solving experience and cannot access these admin controls.
+                        </p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-300">
+                        Signed in as <span className="font-semibold text-white">{user?.username || 'Admin'}</span>
+                    </div>
                 </div>
             </header>
 

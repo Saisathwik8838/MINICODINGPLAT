@@ -57,31 +57,53 @@ export default function ProblemsListPage() {
     };
 
     return (
-        <div className="flex-1 overflow-y-auto bg-dark-900 code-scroll p-6 md:p-12 relative">
-            <div className="max-w-5xl mx-auto space-y-6 relative z-10">
-                
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-white mb-2 flex items-center gap-3">
-                            <Code2 className="w-8 h-8 text-primary-500" />
-                            Problems
-                        </h1>
-                        <p className="text-gray-400">Browse {total} algorithmic challenges to sharpen your skills</p>
-                    </div>
-                </div>
+        <div className="page-shell code-scroll">
+            <div className="ambient-orb ambient-orb-cyan right-[8%] top-[40px] h-72 w-72" />
+            <div className="ambient-orb ambient-orb-amber left-[-40px] top-[260px] h-72 w-72" />
 
-                {/* Filters Row */}
-                <div className="glass-panel p-4 flex flex-col md:flex-row gap-4 justify-between items-center transition-all bg-dark-800/80">
-                    <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto code-scroll pb-1 md:pb-0">
+            <div className="page-width space-y-6">
+                <section className="hero-panel section-fade">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-2xl">
+                            <span className="kicker mb-4">Problem Library</span>
+                            <h1 className="mb-3 flex items-center gap-3 text-3xl font-bold text-white md:text-4xl">
+                                <Code2 className="h-8 w-8 text-sky-300" />
+                                Find a challenge worth solving.
+                            </h1>
+                            <p className="text-base leading-7 text-slate-300">
+                                Browse {total} algorithmic challenges, filter by difficulty, and jump into the editor
+                                with a cleaner, faster workflow.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="surface-card min-w-[170px] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                                    Active Filter
+                                </p>
+                                <p className="mt-3 text-2xl font-bold text-white">{difficulty}</p>
+                            </div>
+                            <div className="surface-card min-w-[170px] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                                    Visible Problems
+                                </p>
+                                <p className="mt-3 text-2xl font-bold text-white">{problems.length}</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="glass-panel section-fade p-4 md:p-5">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div className="flex w-full items-center gap-2 overflow-x-auto code-scroll pb-1 md:w-auto md:pb-0">
                         {['All', 'Easy', 'Medium', 'Hard'].map(d => (
                             <button
                                 key={d}
                                 onClick={() => setDifficulty(d)}
-                                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all ${
                                     difficulty === d 
-                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' 
-                                    : 'bg-dark-700 text-gray-400 hover:text-white hover:bg-dark-600'
+                                    ? 'bg-sky-400/15 text-white shadow-[inset_0_0_0_1px_rgba(125,211,252,0.28)]' 
+                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
                                 }`}
                             >
                                 {d}
@@ -89,22 +111,22 @@ export default function ProblemsListPage() {
                         ))}
                     </div>
 
-                    <div className="relative w-full md:w-64 shrink-0">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input 
-                            type="text" 
-                            placeholder="Search problems..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-dark-900 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:ring-2 focus:ring-primary-500 outline-none transition-shadow"
-                        />
+                        <div className="relative w-full shrink-0 md:w-72">
+                            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                            <input 
+                                type="text" 
+                                placeholder="Search problems..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="soft-input pl-11"
+                            />
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                {/* Problems List */}
-                <div className="glass-panel overflow-hidden border border-dark-700/50 shadow-2xl">
+                <div className="table-shell section-fade">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-dark-800/80 text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-dark-700">
+                        <thead className="border-b border-white/10 bg-white/[0.03] text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                             <tr>
                                 <th className="p-4 w-16 text-center">#</th>
                                 <th className="p-4">Title</th>
@@ -116,36 +138,41 @@ export default function ProblemsListPage() {
                             {loading ? (
                                 Array.from({ length: 15 }).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td className="p-4"><div className="h-4 w-4 bg-dark-700 rounded mx-auto"></div></td>
-                                        <td className="p-4"><div className="h-5 w-64 bg-dark-700 rounded"></div></td>
-                                        <td className="p-4"><div className="h-5 w-16 bg-dark-700 rounded"></div></td>
-                                        <td className="p-4"><div className="h-4 w-12 bg-dark-700 rounded ml-auto mr-2"></div></td>
+                                        <td className="p-4"><div className="mx-auto h-4 w-4 rounded bg-dark-700"></div></td>
+                                        <td className="p-4"><div className="h-5 w-64 rounded bg-dark-700"></div></td>
+                                        <td className="p-4"><div className="h-5 w-16 rounded bg-dark-700"></div></td>
+                                        <td className="p-4"><div className="ml-auto mr-2 h-4 w-12 rounded bg-dark-700"></div></td>
                                     </tr>
                                 ))
                             ) : error ? (
                                 <tr>
                                     <td colSpan="4" className="p-12 text-center text-red-400">
-                                        <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                        <AlertCircle className="mx-auto mb-2 h-8 w-8 opacity-50" />
                                         {error}
                                     </td>
                                 </tr>
                             ) : problems.length === 0 ? (
                                 <tr>
                                     <td colSpan="4" className="p-16 text-center text-gray-500">
-                                        <Code2 className="w-12 h-12 text-dark-600 mx-auto mb-4" />
+                                        <Code2 className="mx-auto mb-4 h-12 w-12 text-dark-600" />
                                         <p className="text-sm font-medium">No problems found matching your criteria.</p>
-                                        <button onClick={() => { setDifficulty('All'); setSearch(''); }} className="mt-4 text-primary-400 hover:text-primary-300 text-sm transition-colors">Clear Filters</button>
+                                        <button onClick={() => { setDifficulty('All'); setSearch(''); }} className="mt-4 text-sm text-primary-400 transition-colors hover:text-primary-300">Clear Filters</button>
                                     </td>
                                 </tr>
                             ) : (
                                 problems.map((p, index) => {
                                     const serial = (page - 1) * 15 + index + 1;
                                     return (
-                                        <tr key={p.id} className="hover:bg-dark-800/30 transition-colors group">
-                                            <td className="p-4 text-center font-mono text-gray-500">{serial}</td>
+                                        <tr key={p.id} className="group transition-colors hover:bg-white/[0.03]">
+                                            <td className="p-4 text-center font-mono text-slate-500">{serial}</td>
                                             <td className="p-4">
-                                                <Link to={`/problems/${p.slug}`} className="font-semibold text-gray-200 group-hover:text-primary-400 transition-colors">
-                                                    {p.title}
+                                                <Link to={`/problems/${p.slug}`} className="block">
+                                                    <span className="font-semibold text-slate-100 transition-colors group-hover:text-sky-300">
+                                                        {p.title}
+                                                    </span>
+                                                    <span className="mt-1 block text-xs text-slate-500">
+                                                        Open the editor and run examples instantly.
+                                                    </span>
                                                 </Link>
                                             </td>
                                             <td className="p-4">
@@ -153,7 +180,7 @@ export default function ProblemsListPage() {
                                                     {p.difficulty}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-right pr-6 font-mono text-sm text-gray-400">
+                                            <td className="p-4 text-right pr-6 font-mono text-sm text-slate-400">
                                                 {p.acceptanceRate}
                                             </td>
                                         </tr>
@@ -165,20 +192,20 @@ export default function ProblemsListPage() {
 
                     {/* Pagination */}
                     {!loading && totalPages > 1 && (
-                        <div className="bg-dark-800/50 border-t border-dark-700/50 p-4 flex items-center justify-between">
-                            <span className="text-sm text-gray-400">Showing page {page} of {totalPages}</span>
+                        <div className="flex items-center justify-between border-t border-white/10 bg-white/[0.03] p-4">
+                            <span className="text-sm text-slate-400">Showing page {page} of {totalPages}</span>
                             <div className="flex gap-2">
                                 <button 
                                     disabled={page === 1}
                                     onClick={() => handlePageChange(page - 1)}
-                                    className="px-3 py-1.5 rounded-md bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="secondary-button px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Previous
                                 </button>
                                 <button 
                                     disabled={page === totalPages}
                                     onClick={() => handlePageChange(page + 1)}
-                                    className="px-3 py-1.5 rounded-md bg-dark-700 hover:bg-dark-600 text-gray-300 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="secondary-button px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Next
                                 </button>
@@ -186,7 +213,6 @@ export default function ProblemsListPage() {
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     );
