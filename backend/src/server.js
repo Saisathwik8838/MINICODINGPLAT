@@ -37,9 +37,9 @@ const gracefulShutdown = (signal) => {
 /**
  * Start server
  */
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT,'0.0.0.0', () => {
     logger.info(
-        `✨ Backend Server is running in ${env.NODE_ENV} mode on http://localhost:${PORT}`
+        `✨ Backend Server is running in ${env.NODE_ENV} mode on http://0.0.0.0:${PORT}`
     );
     logger.info(`Database connected: ${env.DATABASE_URL?.substring(0, 50)}...`);
 });
