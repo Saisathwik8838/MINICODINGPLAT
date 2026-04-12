@@ -1,17 +1,24 @@
 #!/bin/bash
+set -e
 
-# Build script to generate the isolated execution images
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXECUTOR_DIR="$(dirname "$SCRIPT_DIR")"
 
-echo "Building Python Runner..."
-docker build -t minileetcode-runner-python -f Dockerfile.python .
+cd "$EXECUTOR_DIR"
 
-echo "Building JavaScript Runner..."
-docker build -t minileetcode-runner-node -f Dockerfile.node .
+echo "Building executor images..."
 
-echo "Building C++ Runner..."
-docker build -t minileetcode-runner-gcc -f Dockerfile.cpp .
+docker build -t minileetcode-runner-python:latest -f Dockerfile.python .
+echo "✓ Python runner built"
 
-echo "Building Java Runner..."
-docker build -t minileetcode-runner-java -f Dockerfile.java .
+docker build -t minileetcode-runner-node:latest -f Dockerfile.node .
+echo "✓ Node.js runner built"
 
-echo "All runner images built successfully."
+docker build -t minileetcode-runner-gcc:latest -f Dockerfile.cpp .
+echo "✓ C++ runner built"
+
+docker build -t minileetcode-runner-java:latest -f Dockerfile.java .
+echo "✓ Java runner built"
+
+echo ""
+docker images --filter "reference=minileetcode-runner-*" --format "  {{.Repository}}:{{.Tag}}"

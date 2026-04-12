@@ -48,19 +48,14 @@ app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/discussions', standaloneDiscussionRoutes);
 app.use('/api/v1/problems/:problemId/discussions', discussionRoutes);
 
-if (env.NODE_ENV === 'production') {
     const __dirname = path.resolve();
-    // Assuming backend is launched from backend/ folder, so frontend is at ../frontend/dist
-    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    // Serve static React files from 'public' directory
+    app.use(express.static(path.join(__dirname, 'public')));
     
+    // React Router fallback - MUST be last
     app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../frontend/dist', 'index.html'));
+        res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
     });
-} else {
-    app.all('*', (req, res, next) => {
-        res.status(404).json({ message: `Route ${req.originalUrl} not found` });
-    });
-}
 
 app.use(errorHandler);
 

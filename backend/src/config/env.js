@@ -45,8 +45,6 @@ export const env = {
     
     // API Configuration
     FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
-    API_RATE_LIMIT_WINDOW_MS: parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '900000', 10),
-    API_RATE_LIMIT_MAX_REQUESTS: parseInt(process.env.API_RATE_LIMIT_MAX_REQUESTS || '100', 10),
     
     // Submission constraints
     MAX_CODE_SIZE_KB: parseInt(process.env.MAX_CODE_SIZE_KB || '100', 10),

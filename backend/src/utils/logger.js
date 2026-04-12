@@ -1,8 +1,12 @@
-const getTimestamp = () => new Date().toISOString();
+const ts = () => new Date().toISOString();
 
 export const logger = {
-  info: (...args) => console.log(`[${getTimestamp()}] [INFO]`, ...args),
-  warn: (...args) => console.warn(`[${getTimestamp()}] [WARN]`, ...args),
-  error: (...args) => console.error(`[${getTimestamp()}] [ERROR]`, ...args),
-  debug: (...args) => console.debug(`[${getTimestamp()}] [DEBUG]`, ...args),
+    info:  (...a) => console.log( `[${ts()}] INFO `, ...a),
+    warn:  (...a) => console.warn( `[${ts()}] WARN `, ...a),
+    error: (...a) => console.error(`[${ts()}] ERROR`, ...a),
+    debug: (...a) => {
+        if (process.env.NODE_ENV !== 'production') {
+            console.debug(`[${ts()}] DEBUG`, ...a);
+        }
+    },
 };

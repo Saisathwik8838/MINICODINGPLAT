@@ -57,7 +57,7 @@ docker compose version
 cd /opt
 
 # Clone the platform repository
-git clone https://github.com/yourusername/minileetcode-platform.git
+git clone https://github.com/Saisathwik8838/minileetcode-platform.git
 cd minileetcode-platform
 ```
 

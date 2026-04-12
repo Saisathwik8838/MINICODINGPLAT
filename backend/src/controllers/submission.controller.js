@@ -38,7 +38,7 @@ const executeTestCase = async (testcase, code, language, index, total) => {
     }
 };
 
-const syncUserLeaderboard = async (userId) => {
+const syncUserScore = async (userId) => {
     if (!userId) return;
     try {
         const solvedProblems = await prisma.submission.findMany({
@@ -91,7 +91,7 @@ const processSubmission = async (submissionId, code, language, problemId) => {
         });
         
         logger.info(`Submission ${submissionId} completed: ${finalStatus} (${passedTestCases}/${problem.testCases.length} test cases, ${maxRuntime.toFixed(2)}ms)`);
-        if (finalStatus === 'ACCEPTED' && updatedSubmission.userId) await syncUserLeaderboard(updatedSubmission.userId);
+        if (finalStatus === 'ACCEPTED' && updatedSubmission.userId) await syncUserScore(updatedSubmission.userId);
     } catch (error) {
         logger.error(`Error processing submission ${submissionId}: ${error.message}`);
         await prisma.submission.update({
@@ -114,13 +114,11 @@ export const createSubmission = async (req, res, next) => {
             data: { userId, problemId, language: language.toUpperCase(), code, status: 'PROCESSING' }
         });
 
-        // Respond immediately with 202 and submission ID
         res.status(202).json({
             status: 'success',
             data: { submissionId: submission.id }
         });
 
-        // Call asynchronously (fire-and-forget)
         processSubmission(submission.id, code, language.toUpperCase(), problemId);
     } catch (error) {
         next(error);

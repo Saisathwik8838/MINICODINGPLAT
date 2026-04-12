@@ -176,6 +176,6 @@ async function main() {
 
 // Run
 main().catch(err => {
-    console.error(chalk.red('Fatal error:'), err);
+    console.error('Fatal error:', err);
     process.exit(1);
 });

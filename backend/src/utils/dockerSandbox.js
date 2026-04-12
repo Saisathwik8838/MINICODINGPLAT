@@ -118,7 +118,7 @@ const validateDockerAvailable = async () => {
     return { available: true, version: stdout.trim() };
 };
 
-const inspectSandboxImage = async (imageName) => {
+const inspectImage = async (imageName) => {
     const { error, stdout, stderr } = await runDockerCli(['image', 'inspect', imageName]);
 
     if (!error) {
@@ -135,7 +135,7 @@ const inspectSandboxImage = async (imageName) => {
     return { exists: false, missing: false, error: errorMessage };
 };
 
-const buildSandboxImage = async (imageName) => {
+const buildImage = async (imageName) => {
     if (imageBuildPromises.has(imageName)) {
         return imageBuildPromises.get(imageName);
     }
@@ -186,7 +186,7 @@ const buildSandboxImage = async (imageName) => {
             };
         }
 
-        const imageState = await inspectSandboxImage(imageName);
+        const imageState = await inspectImage(imageName);
         if (!imageState.exists) {
             return {
                 available: false,
@@ -206,8 +206,8 @@ const buildSandboxImage = async (imageName) => {
     return buildPromise;
 };
 
-const ensureSandboxImageAvailable = async (imageName) => {
-    const imageState = await inspectSandboxImage(imageName);
+const ensureImageAvailable = async (imageName) => {
+    const imageState = await inspectImage(imageName);
     if (imageState.exists) {
         return { available: true };
     }
@@ -226,7 +226,7 @@ const ensureSandboxImageAvailable = async (imageName) => {
         };
     }
 
-    return buildSandboxImage(imageName);
+    return buildImage(imageName);
 };
 
 const buildContainerCommand = (config, executionId) => {
@@ -241,7 +241,7 @@ const buildContainerCommand = (config, executionId) => {
     return steps.join(' && ');
 };
 
-const createSandboxContainer = async (config, executionId) => {
+const createContainer = async (config, executionId) => {
     const containerName = `sandbox-${executionId.substring(0, 12)}`;
     const containerCommand = buildContainerCommand(config, executionId);
 
@@ -280,7 +280,7 @@ const createSandboxContainer = async (config, executionId) => {
     return containerName;
 };
 
-const copyExecutionFilesToContainer = async (containerName, localTempDir, executionId) => {
+const copyFilesToContainer = async (containerName, localTempDir, executionId) => {
     logger.debug(`Copying execution files for ${executionId}`, {
         container: containerName,
         source: localTempDir,
@@ -293,14 +293,14 @@ const copyExecutionFilesToContainer = async (containerName, localTempDir, execut
     }
 };
 
-const removeSandboxContainer = async (containerName) => {
+const removeContainer = async (containerName) => {
     const { error } = await runDockerCli(['rm', '-f', containerName]);
     if (error) {
         logger.debug(`Sandbox container cleanup skipped for ${containerName}`);
     }
 };
 
-const startSandboxContainer = async (config, containerName, executionId) =>
+const startContainer = async (config, containerName, executionId) =>
     new Promise((resolve) => {
         const startTime = performance.now();
         const timeoutMs = (config.timeout + 5) * 1000;
@@ -394,13 +394,13 @@ const startSandboxContainer = async (config, containerName, executionId) =>
     });
 
 const executeInSandbox = async (config, localTempDir, executionId) => {
-    const containerName = await createSandboxContainer(config, executionId);
+    const containerName = await createContainer(config, executionId);
 
     try {
-        await copyExecutionFilesToContainer(containerName, localTempDir, executionId);
-        return await startSandboxContainer(config, containerName, executionId);
+        await copyFilesToContainer(containerName, localTempDir, executionId);
+        return await startContainer(config, containerName, executionId);
     } finally {
-        await removeSandboxContainer(containerName);
+        await removeContainer(containerName);
     }
 };
 
@@ -439,7 +439,7 @@ export const runCodeInSandbox = async (language, code, input) => {
             };
         }
 
-        const imageState = await ensureSandboxImageAvailable(config.image);
+        const imageState = await ensureImageAvailable(config.image);
         if (!imageState.available) {
             logger.error(`Sandbox image unavailable: ${config.image}`, { executionId, error: imageState.error });
             return {
@@ -487,15 +487,11 @@ export const runCodeInSandbox = async (language, code, input) => {
             executionId,
         };
     } finally {
-        try {
-            if (shouldCleanupTempFiles()) {
-                await fs.remove(localTempDir);
-                logger.debug(`Cleaned up: ${localTempDir}`);
-            } else {
-                logger.debug(`Kept temp directory for debugging: ${localTempDir}`);
-            }
-        } catch (cleanupErr) {
-            logger.warn(`Failed to cleanup ${localTempDir}`, { error: cleanupErr.message });
+        if (shouldCleanupTempFiles()) {
+            fs.remove(localTempDir).catch(() => {});
+            logger.debug(`Cleaned up: ${localTempDir}`);
+        } else {
+            logger.debug(`Kept temp directory for debugging: ${localTempDir}`);
         }
     }
 };
