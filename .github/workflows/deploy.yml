@@ -30,6 +30,10 @@ jobs:
             npm run build
             cd ..
             
+            # Copy built frontend to backend/public so Express can serve it
+            rm -rf backend/public
+            cp -r frontend/dist backend/public
+            
             # Rebuild the backend and restart containers without downtime for unchanged services
             docker compose build --no-cache backend
             docker compose up -d
