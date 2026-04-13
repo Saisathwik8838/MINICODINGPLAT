@@ -208,13 +208,21 @@ export const getAllSubmissions = async (req, res, next) => {
 
 export const getAllProblems = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 20, search = '' } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
 
+        const where = search ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { slug: { contains: search, mode: 'insensitive' } }
+          ]
+        } : {};
+
         const [problems, total] = await Promise.all([
             prisma.problem.findMany({
+                where,
                 skip,
                 take: limitNum,
                 orderBy: { createdAt: 'desc' },
@@ -226,7 +234,7 @@ export const getAllProblems = async (req, res, next) => {
                     }
                 }
             }),
-            prisma.problem.count()
+            prisma.problem.count({ where })
         ]);
 
         res.status(200).json({

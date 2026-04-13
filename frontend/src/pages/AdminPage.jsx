@@ -132,22 +132,26 @@ const StatCard = ({ title, value, icon, color }) => (
 /* -------------------------------------------------------------------------- */
 
 const ProblemsTab = ({ showToast }) => {
-    const [problems, setProblems] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState(null);
-
     const [generatingMap, setGeneratingMap] = useState({});
+    const [problems, setProblems] = useState([]);
 
     const [formData, setFormData] = useState({
         title: '', slug: '', description: '', difficulty: 'EASY', timeLimit: 5, memoryLimit: 256, isActive: true
     });
 
-    const fetchProblems = async () => {
+    const fetchProblems = async (pageNum = 1) => {
         setLoading(true);
         try {
-            const { data } = await api.get('/admin/problems');
+            const { data } = await api.get(`/admin/problems?page=${pageNum}&limit=20&search=${searchTerm}`);
             setProblems(data.data.problems || []);
+            setTotalPages(data.data.pagination?.totalPages || 1);
+            setPage(pageNum);
         } catch (err) {
             showToast('Failed to fetch problems', 'error');
         } finally {
@@ -155,7 +159,7 @@ const ProblemsTab = ({ showToast }) => {
         }
     };
 
-    useEffect(() => { fetchProblems(); }, []);
+    useEffect(() => { fetchProblems(1); }, [searchTerm]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -219,10 +223,21 @@ const ProblemsTab = ({ showToast }) => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-white">Problem Library</h2>
-                <button onClick={() => { setShowForm(!showForm); setEditingId(null); setFormData({ title: '', slug: '', description: '', difficulty: 'EASY', timeLimit: 5, memoryLimit: 256, isActive: true }); }} className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
-                    <Plus className="w-4 h-4" /> New Problem
-                </button>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h2 className="text-xl font-bold text-white whitespace-nowrap">Problem Library</h2>
+                <div className="flex w-full md:w-auto gap-3">
+                    <input 
+                        type="text" 
+                        placeholder="Search title or slug..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1 md:w-64 bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-sm text-white focus:border-primary-500 focus:outline-none transition-colors"
+                    />
+                    <button onClick={() => { setShowForm(!showForm); setEditingId(null); setFormData({ title: '', slug: '', description: '', difficulty: 'EASY', timeLimit: 5, memoryLimit: 256, isActive: true }); }} className="shrink-0 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                        <Plus className="w-4 h-4" /> New Problem
+                    </button>
+                </div>
+            </div>
             </div>
 
             {showForm && (
@@ -274,6 +289,14 @@ const ProblemsTab = ({ showToast }) => {
                         ))}
                     </tbody>
                 </table>
+                
+                {!loading && totalPages > 1 && (
+                    <div className="p-4 border-t border-dark-700 bg-dark-800/50 flex justify-between items-center">
+                        <button disabled={page === 1} onClick={() => fetchProblems(page - 1)} className="px-3 py-1 bg-dark-700 rounded text-sm text-white disabled:opacity-50">Previous</button>
+                        <span className="text-sm text-gray-400">Page {page} of {totalPages}</span>
+                        <button disabled={page === totalPages} onClick={() => fetchProblems(page + 1)} className="px-3 py-1 bg-dark-700 rounded text-sm text-white disabled:opacity-50">Next</button>
+                    </div>
+                )}
             </div>
         </div>
     );
