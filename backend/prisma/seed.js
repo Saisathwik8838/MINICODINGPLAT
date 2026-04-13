@@ -24,18 +24,14 @@ async function main() {
     });
     console.log(`Created admin user: ${adminUser.username} (${adminUser.email})`);
 
-    // 2. Import from HuggingFace Dataset
-    console.log('\n📥 Importing problems from LeetCodeDataset...');
-    console.log('   (fetching first 50 problems from train split)\n');
-
+    console.log('\n📥 Importing 2000 problems from LeetCodeDataset...');
     try {
-        const { fetchRows } = await import('../src/services/leetcodeDataset.service.js');
+        const { fetchAllRows } = await import('../src/services/leetcodeDataset.service.js');
         const { normalizeAll } = await import('../src/services/leetcodeNormalizer.service.js');
         const { importProblems } = await import('../src/services/leetcodeImport.service.js');
 
-        const { rows } = await fetchRows(0, 50);
-        const rawRows = rows.map(r => r.row || r);
-        const normalized = normalizeAll(rawRows);
+        const allRows = await fetchAllRows(2000);
+        const normalized = normalizeAll(allRows);
         const result = await importProblems(normalized, {
             skipExisting: true,
             overwrite: false
