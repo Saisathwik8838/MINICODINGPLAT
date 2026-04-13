@@ -22,7 +22,11 @@ import profileRoutes from './routes/profile.routes.js';
 
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 app.use(
     cors({
         origin: function(origin, callback) {
