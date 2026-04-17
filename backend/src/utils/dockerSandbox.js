@@ -226,15 +226,16 @@ const buildContainerCommand = (config) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FIX 6: Use `docker run` directly (not create+cp+start) so files are provided
-//         via a bind mount.  This is far simpler, more reliable, and avoids the
-//         docker cp ownership problem entirely.
+// FIX 6: Use `docker create -> docker cp -> docker start` to bypass volume
+//         mount issues on Docker-in-Docker deployments where host paths diverge.
 // ─────────────────────────────────────────────────────────────────────────────
 const executeInSandbox = async (config, localTempDir, executionId) =>
-    new Promise((resolve) => {
+    new Promise(async (resolve) => {
         const containerCommand = buildContainerCommand(config);
         const timeoutMs = (config.timeout + 5) * 1000;
         let completed = false;
+        let containerId = null;
+        let timeoutId = null;
         const startTime = performance.now();
 
         logger.debug(`Executing sandbox container for ${executionId}`, {
@@ -243,91 +244,143 @@ const executeInSandbox = async (config, localTempDir, executionId) =>
             localDir: localTempDir,
         });
 
-        const child = execFile(
-            'docker',
-            [
-                'run',
-                '--rm',
+        try {
+            // 1. Create the container without volume mounts
+            const createRes = await runDockerCli([
+                'create',
                 '--network', 'none',
                 '--security-opt=no-new-privileges:true',
                 '--pids-limit', '64',
                 `--memory=${config.memory}`,
                 '--cpus', '0.5',
                 '--user', config.user,
-                '-v', `${localTempDir}:/sandbox`,
                 '-w', '/sandbox',
                 config.image,
                 'sh', '-c', containerCommand,
-            ],
-            { maxBuffer: DOCKER_OUTPUT_MAX_BUFFER },
-            (error, stdout, stderr) => {
-                clearTimeout(timeoutId);
+            ]);
+
+            if (createRes.error) {
+                const errorMessage = getDockerErrorMessage(createRes.error, createRes.stdout, createRes.stderr);
+                return resolve({
+                    status: 'INTERNAL_ERROR',
+                    stdout: '',
+                    stderr: `Failed to create container: ${errorMessage}`,
+                    runTime: 0,
+                    executionId,
+                });
+            }
+
+            containerId = createRes.stdout.trim();
+
+            // 2. Upload files via docker cp (avoids host-path mapping issues entirely)
+            const cpRes = await runDockerCli([
+                'cp',
+                `${localTempDir}/.`,
+                `${containerId}:/sandbox/`
+            ]);
+
+            if (cpRes.error) {
+                return resolve({
+                    status: 'INTERNAL_ERROR',
+                    stdout: '',
+                    stderr: `Failed to copy files into sandbox: ${cpRes.stderr.trim() || cpRes.error.message}`,
+                    runTime: 0,
+                    executionId,
+                });
+            }
+
+            // Start timeout tracker
+            timeoutId = setTimeout(() => {
                 if (completed) return;
                 completed = true;
-
-                const runTime = performance.now() - startTime;
-                const normalizedStdout = stdout.trim();
-                const normalizedStderr = stderr.trim();
-
-                logger.debug(`Sandbox container finished for ${executionId}`, {
-                    exitCode: error?.code ?? 0,
-                    runtime: runTime,
+                logger.warn(`Execution timeout: ${executionId}`, { timeout: timeoutMs });
+                runDockerCli(['kill', containerId]); // Kill the container forcefully
+                resolve({
+                    status: 'TIMEOUT',
+                    stdout: '',
+                    stderr: 'Time Limit Exceeded',
+                    runTime: config.timeout * 1000,
+                    executionId,
                 });
+            }, timeoutMs);
 
-                if (error) {
-                    if (error.code === COMPILATION_FAILURE_EXIT_CODE) {
-                        return resolve({
-                            status: 'COMPILATION_ERROR',
-                            stdout: normalizedStdout,
-                            stderr: (normalizedStderr || normalizedStdout || error.message).trim(),
-                            runTime: 0,
-                            executionId,
-                        });
-                    }
+            // 3. Start the container and wait for output
+            const startRes = await runDockerCli([
+                'start',
+                '-a',
+                containerId
+            ]);
 
-                    const errorMessage = getDockerErrorMessage(error, normalizedStdout, normalizedStderr);
-                    if (isDockerInfrastructureError(errorMessage, error.code)) {
-                        return resolve({
-                            status: 'INTERNAL_ERROR',
-                            stdout: normalizedStdout,
-                            stderr: errorMessage,
-                            runTime: 0,
-                            executionId,
-                        });
-                    }
+            clearTimeout(timeoutId);
+            if (completed) return;
+            completed = true;
 
+            const runTime = performance.now() - startTime;
+            const normalizedStdout = startRes.stdout.trim();
+            const normalizedStderr = startRes.stderr.trim();
+            const error = startRes.error;
+
+            logger.debug(`Sandbox container finished for ${executionId}`, {
+                exitCode: error?.code ?? 0,
+                runtime: runTime,
+            });
+
+            if (error) {
+                if (error.code === COMPILATION_FAILURE_EXIT_CODE) {
                     return resolve({
-                        status: 'RUNTIME_ERROR',
+                        status: 'COMPILATION_ERROR',
                         stdout: normalizedStdout,
-                        stderr: (normalizedStderr || error.message).trim(),
-                        runTime,
+                        stderr: (normalizedStderr || normalizedStdout || error.message).trim(),
+                        runTime: 0,
+                        executionId,
+                    });
+                }
+
+                const errorMessage = getDockerErrorMessage(error, normalizedStdout, normalizedStderr);
+                if (isDockerInfrastructureError(errorMessage, error.code)) {
+                    return resolve({
+                        status: 'INTERNAL_ERROR',
+                        stdout: normalizedStdout,
+                        stderr: errorMessage,
+                        runTime: 0,
                         executionId,
                     });
                 }
 
                 return resolve({
-                    status: 'SUCCESS',
+                    status: 'RUNTIME_ERROR',
                     stdout: normalizedStdout,
-                    stderr: normalizedStderr,
+                    stderr: (normalizedStderr || error.message).trim(),
                     runTime,
                     executionId,
                 });
             }
-        );
 
-        const timeoutId = setTimeout(() => {
-            if (completed) return;
-            completed = true;
-            logger.warn(`Execution timeout: ${executionId}`, { timeout: timeoutMs });
-            child.kill();
-            resolve({
-                status: 'TIMEOUT',
-                stdout: '',
-                stderr: 'Time Limit Exceeded',
-                runTime: config.timeout * 1000,
+            return resolve({
+                status: 'SUCCESS',
+                stdout: normalizedStdout,
+                stderr: normalizedStderr,
+                runTime,
                 executionId,
             });
-        }, timeoutMs);
+
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (!completed) {
+                completed = true;
+                resolve({
+                    status: 'INTERNAL_ERROR',
+                    stdout: '',
+                    stderr: `Sandbox execution error: ${err.message}`,
+                    runTime: 0,
+                    executionId,
+                });
+            }
+        } finally {
+            if (containerId) {
+                runDockerCli(['rm', '-f', containerId]);
+            }
+        }
     });
 
 // ─────────────────────────────────────────────────────────────────────────────
