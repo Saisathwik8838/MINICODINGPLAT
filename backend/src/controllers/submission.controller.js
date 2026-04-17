@@ -3,6 +3,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logger } from '../utils/logger.js';
 import { runCodeInSandbox } from '../utils/dockerSandbox.js';
 import { normalizeTestCaseInput } from '../utils/testcaseInput.js';
+import { compareOutput } from '../utils/compareOutput.js';
 
 const MAX_CODE_SIZE = 100 * 1024; // 100 KB
 const ERROR_MESSAGE_MAX_LENGTH = 2000;
@@ -27,7 +28,7 @@ const executeTestCase = async (testcase, code, language, index, total) => {
         const normalizedStdout = normalizeOutput(stdout);
         const normalizedExpected = normalizeOutput(testcase.expectedOutput);
         
-        if (normalizedStdout !== normalizedExpected) {
+        if (!compareOutput(normalizedExpected, normalizedStdout)) {
             logger.debug(`Testcase ${index + 1} failed: output mismatch`);
             return { passed: false, shouldStop: true, status: 'WRONG_ANSWER', error: `Expected:\n${normalizedExpected}\n\nGot:\n${normalizedStdout}`.slice(0, ERROR_MESSAGE_MAX_LENGTH), runtime: runTime };
         }

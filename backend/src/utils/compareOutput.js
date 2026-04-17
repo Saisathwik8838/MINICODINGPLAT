@@ -1,4 +1,4 @@
-const compareOutput = (expected, actual) => {
+export const compareOutput = (expected, actual) => {
     // 1. Helper to canonicalize parsed JSON objects
     const canonicalizeJSON = (obj) => {
         if (Array.isArray(obj)) {
@@ -109,5 +109,3 @@ const compareOutput = (expected, actual) => {
 
     return true;
 };
-
-module.exports = { compareOutput };
