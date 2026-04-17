@@ -48,8 +48,8 @@ const LANGUAGE_CONFIGS = {
         image: 'minileetcode-runner-gcc:latest',
         fileName: 'solution.cpp',
         // FIX 3: explicit exit code on compile failure
-        compileCommand: () => `g++ -O2 /sandbox/solution.cpp -o /sandbox/main.out || exit ${COMPILATION_FAILURE_EXIT_CODE}`,
-        executeCommand: () => 'cat /sandbox/input.txt | /sandbox/main.out',
+        compileCommand: () => `g++ -O2 /sandbox/solution.cpp -o /tmp/main.out || exit ${COMPILATION_FAILURE_EXIT_CODE}`,
+        executeCommand: () => 'cat /sandbox/input.txt | /tmp/main.out',
         timeout: 8,
         memory: '512m',
         user: 'runner'
@@ -57,8 +57,8 @@ const LANGUAGE_CONFIGS = {
     JAVA: {
         image: 'minileetcode-runner-java:latest',
         fileName: 'Main.java',
-        compileCommand: () => `javac /sandbox/Main.java || exit ${COMPILATION_FAILURE_EXIT_CODE}`,
-        executeCommand: () => 'cat /sandbox/input.txt | java -cp /sandbox Main',
+        compileCommand: () => `javac -d /tmp /sandbox/Main.java || exit ${COMPILATION_FAILURE_EXIT_CODE}`,
+        executeCommand: () => 'cat /sandbox/input.txt | java -cp /tmp Main',
         timeout: 12,
         memory: '512m',
         user: 'runner'
