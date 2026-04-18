@@ -23,25 +23,9 @@ The core underlying philosophy is **event-driven asynchronous processing** for c
 - **Responsibilities**:
   - Handles User Authentication (JWT + Refresh Tokens).
   - Exposes REST endpoints for Problems, Submissions, Leaderboard, and Discussions.
-  - Implements API Rate Limiting (10 code runs/min, 5 submissions/min) using Redis.
-  - Pushes code execution jobs to the Redis Queue (BullMQ).
+  - Processes code execution directly via dockerSandbox.js utility.
 
-### 4. Message Broker / Queue
-- **Technology**: Redis + BullMQ.
-- **Role**: Decouples the API from the heavy task of code execution. 
-- **Responsibilities**: Holds the queue of pending code submissions. Provides a sliding window state for rate-limiting purposes.
 
-### 5. Worker Service
-- **Technology**: Node.js.
-- **Role**: Consumes jobs from the Redis queue.
-- **Responsibilities**:
-  - Pulls submission payloads (code, language, test cases).
-  - Interacts with the Docker daemon to spin up isolated executor containers.
-  - Monitors the execution lifecycle.
-  - Captures `stdout`, `stderr`, and runtime metrics.
-  - Compares the output against the expected results.
-  - Stores the final evaluation state in PostgreSQL.
-  - Updates the Leaderboard based on success.
 
 ### 6. Code Execution Engine (Sandbox)
 - **Technology**: Docker.
@@ -67,19 +51,16 @@ The core underlying philosophy is **event-driven asynchronous processing** for c
 ## 1.3. Information Flow (Execution Lifecycle)
 1. **Submit**: A user writes code in the Monaco Editor and clicks "Submit".
 2. **API Request**: The React app sends a POST request with the source code and language to the API Server.
-3. **Validation & Rate Limit**: The API validates the JWT and checks the Redis rate limiter (max 5 submissions / min).
-4. **Queue Job**: If allowed, a new Submission record is created in PostgreSQL with a `Pending` status. The API pushes the payload into BullMQ (Redis) and returns a submission ID to the user.
-5. **Poll/Listen**: The frontend starts polling the API (or uses SSE/WebSockets) for the status of the submission ID.
-6. **Task Pickup**: An idle Worker picks up the job from the queue.
-7. **Sandbox Execution**: The Worker spins up a secure Docker container for the specific language (`python`, `node`, `gcc`, `openjdk`), passing the code and test cases in a read-only volume or via `stdin`.
-8. **Evaluation**: Code evaluates. The Worker collects the outcome (Accepted, Wrong Answer, Time Limit Exceeded, Memory Limit Exceeded, Runtime Error).
-9. **State Update**: The Worker writes the final results (runtime, memory, status) into PostgreSQL.
-10. **Result Delivered**: The frontend successfully fetches the completed status, and the user sees their result.
+3. **Validation**: The API validates the JWT.
+4. **Execution Start**: A new Submission record is created in PostgreSQL with a `Pending` status. The backend responds to the client with a 202 status and a submission ID.
+5. **Sandbox Execution**: The `processSubmission()` function runs asynchronously. It spins up a secure Docker container for the specific language (`python`, `node`, `gcc`, `openjdk`) via `dockerSandbox.js`.
+6. **Evaluation**: Code evaluates. The backend collects the outcome.
+7. **State Update**: The backend writes the final results (runtime, memory, status) into PostgreSQL.
+8. **Result Delivered**: The frontend polls the API and successfully fetches the completed status, and the user sees their result.
 
 ---
 
 ## 1.4. Scalability Profile
 - The **Frontend** can be hosted on a CDN or horizontally scaled Nginx instances.
-- The **Backend API** is stateless (JWT + Redis for rate limits) and can be replicated and horizontally scaled behind the load balancer.
-- The **Worker Service** can be horizontally scaled across multiple VMs. If the submission queue grows large, adding more worker nodes instantly increases throughput.
+- The **Backend API** is stateless and can be replicated and horizontally scaled behind the load balancer.
 - The **Database** can utilize read replicas to handle high traffic on the Leaderboard and Problem reading endpoints.
