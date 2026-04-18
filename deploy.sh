@@ -41,9 +41,9 @@ sudo rm -rf backend/public
 sudo cp -r frontend/dist backend/public
 
 echo "Rebuilding and restarting services..."
-sudo docker compose down
-sudo docker compose build --no-cache backend
-sudo docker compose up -d
+sudo docker-compose down
+sudo docker-compose build --no-cache backend
+sudo docker-compose up -d
 
 echo "Waiting for PostgreSQL to be completely up..."
 sleep 20
@@ -53,6 +53,6 @@ sudo docker exec minileetcode-backend npx prisma migrate deploy
 sudo docker exec minileetcode-backend npm run db:seed || true
 
 echo "Checking health..."
-sudo docker compose ps
+sudo docker-compose ps
 curl http://localhost/api/v1/health || true
 echo "Setup completely executed!"

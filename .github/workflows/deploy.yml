@@ -35,8 +35,8 @@ jobs:
             cp -r frontend/dist backend/public
             
             # Rebuild the backend and restart containers without downtime for unchanged services
-            docker compose build --no-cache backend
-            docker compose up -d
+            docker-compose build --no-cache backend
+            docker-compose up -d
             
             # Run database migrations securely inside the backend container
             docker exec minileetcode-backend npx prisma migrate deploy
