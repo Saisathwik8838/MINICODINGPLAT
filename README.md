@@ -1,5 +1,56 @@
 # MiniLeetCode
 
+#projectStructure
+.
+├── frontend/                    # React + Vite app
+│   ├── src/
+│   │   ├── pages/              # Route pages (Auth, Dashboard, Editor, etc)
+│   │   ├── components/         # Reusable UI components
+│   │   ├── store/              # Zustand state management
+│   │   ├── api/                # Axios HTTP client
+│   │   └── utils/              # Helper functions
+│   ├── vite.config.js          # Vite build configuration
+│   └── package.json            # Frontend dependencies
+│
+├── backend/                     # Node.js/Express API
+│   ├── src/
+│   │   ├── server.js           # Entry point
+│   │   ├── app.js              # Express configuration
+│   │   ├── routes/             # API route handlers
+│   │   ├── controllers/        # Request handlers
+│   │   ├── services/           # Business logic
+│   │   ├── middlewares/        # Auth, error handling
+│   │   ├── utils/              # JWT, logging, Docker, etc
+│   │   ├── config/             # Environment & DB setup
+│   │   └── public/             # Static files (built React)
+│   ├── Dockerfile              # Backend containerization
+│   └── package.json            # Backend dependencies
+│
+├── executor/                    # Docker sandboxing
+│   ├── Dockerfile.python       # Python 3 runner
+│   ├── Dockerfile.node         # Node.js runner
+│   ├── Dockerfile.cpp          # C++ runner
+│   ├── Dockerfile.java         # Java runner
+│   ├── runners/                # Language-specific execution scripts
+│   └── scripts/                # Image build scripts
+│
+├── infrastructure/              # DevOps configuration
+│   ├── docker-compose.yml      # Service orchestration
+│   ├── nginx/                  # Reverse proxy config
+│   └── monitoring/             # Prometheus/Grafana (optional)
+│
+├── prisma/                     # Database ORM
+│   ├── schema.prisma           # Database schema
+│   ├── migrations/             # Schema migrations
+│   └── seed.js                 # Initial data
+│
+├── docs/                       # Documentation
+│   ├── API_SPECS.yaml         # OpenAPI/Swagger specs
+│   ├── ARCHITECTURE.md         # System design details
+│   └── SETUP.md               # Deployment guide
+│
+└── .env.example               # Environment template
+
 MiniLeetCode is a distributed code runner platform that allows users to submit solutions to coding problems, execute them in a secure sandbox, and receive real-time feedback on their code's performance against varying test cases.
 
 ## Architecture
